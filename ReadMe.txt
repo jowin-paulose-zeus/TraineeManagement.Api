@@ -31,7 +31,7 @@ Day 2 of dotnet project (6th July)
 -Dotnet Run
 
 ## Challenges Faced
-I faced difficulties in installing Nuget packages as wel couldn't access the packages on https://api.nuget.org/v3/index.json.
+I faced difficulties in installing Nuget packages as we couldn't access the packages on https://api.nuget.org/v3/index.json.
 After asking some seniors I came to know we had to access the nuget packages through AWS. Setting that up took time.
 
 ## Improvements Planned
