@@ -17,7 +17,7 @@ Day 1 of dotnet project (3rd July)
 -Get all Trainees (GET)
 -Get Trainee by Id (Get/{id})
 -Create new trainee (POST)
-Dat 2 of dotnet project (6th July)
+Day 2 of dotnet project (6th July)
 -Update Trainee details (PUT)
 -Delete Trainee (Delete)
 -Request and response DTOs
