@@ -91,11 +91,11 @@ namespace TraineeManagement.Api.Services
         {
             string formattedSearch = searchTerm.ToLower().Trim();
             List<Trainee> trainees = await _context.Trainees
-                .Where(trainee => 
-                    trainee.FirstName.ToLower().Contains(formattedSearch) || 
-                    trainee.LastName.ToLower().Contains(formattedSearch) || 
-                    trainee.Email.ToLower().Contains(formattedSearch) || 
-                    trainee.TechStack.ToLower().Contains(formattedSearch))
+                .Where(trainee =>
+                    trainee.FirstName.Contains(formattedSearch, StringComparison.CurrentCultureIgnoreCase) ||
+                    trainee.LastName.Contains(formattedSearch, StringComparison.CurrentCultureIgnoreCase) ||
+                    trainee.Email.Contains(formattedSearch, StringComparison.CurrentCultureIgnoreCase) ||
+                    trainee.TechStack.Contains(formattedSearch, StringComparison.CurrentCultureIgnoreCase))
                 .ToListAsync();
 
             return [.. trainees.Select(MapToResponse)];
