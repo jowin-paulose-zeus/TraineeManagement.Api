@@ -1,6 +1,6 @@
 This project was made as part of my training to learn dotnet.
 I followed the daily steps provided in the "Three_Day_DotNet_API_InMemory_Training_Plan.pdf"
-
+3rd July and 6th July 2026 Task
 # TraineeMangement.Api
 
 ## Technology Used
@@ -17,7 +17,7 @@ Day 1 of dotnet project (3rd July)
 -Get all Trainees (GET)
 -Get Trainee by Id (Get/{id})
 -Create new trainee (POST)
-Dat 2 of dotnet project (6th July)
+Day 2 of dotnet project (6th July)
 -Update Trainee details (PUT)
 -Delete Trainee (Delete)
 -Request and response DTOs
@@ -31,7 +31,7 @@ Dat 2 of dotnet project (6th July)
 -Dotnet Run
 
 ## Challenges Faced
-I faced difficulties in installing Nuget packages as wel couldn't access the packages on https://api.nuget.org/v3/index.json.
+I faced difficulties in installing Nuget packages as we couldn't access the packages on https://api.nuget.org/v3/index.json.
 After asking some seniors I came to know we had to access the nuget packages through AWS. Setting that up took time.
 
 ## Improvements Planned
