@@ -9,20 +9,33 @@ I followed the daily steps provided in the "Three_Day_DotNet_API_InMemory_Traini
 -.Net
 -Swagger
 
+## API List
+-GET/api/trainee/Health
+-GET/api/trainee/Trainee
+-POST/api/trainee/Trainee
+-PUT/api/trainee/Trainee
+-GET/api/trainee/Trainee/id
+-DELETE/api/trainee/Trainee/Id
+-GET/api/trainee/Trainee/search
+
 ## Features Completed
 Day 1 of dotnet project (3rd July)
--Swagger UI for API testing
--In-memory data storage using List<Trainee>
--Health Check endpoint (GET)
--Get all Trainees (GET)
--Get Trainee by Id (Get/{id})
--Create new trainee (POST)
+    -Swagger UI for API testing
+    -In-memory data storage using List<Trainee>
+    -Health Check endpoint (GET)
+    -Get all Trainees (GET)
+    -Get Trainee by Id (Get/{id})
+    -Create new trainee (POST)
 Day 2 of dotnet project (6th July)
--Update Trainee details (PUT)
--Delete Trainee (Delete)
--Request and response DTOs
--Input Validation
--Service Layer Implementation
+    -Update Trainee details (PUT)
+    -Delete Trainee (Delete)
+    -Request and response DTOs
+    -Input Validation
+    -Service Layer Implementation
+Day 3 of dotnet project (7th Juyl)
+    -Added EntityFrameworkCore
+    -Added Async functions
+    -Added a search function
 
 
 ## How to Run
@@ -35,5 +48,4 @@ I faced difficulties in installing Nuget packages as we couldn't access the pack
 After asking some seniors I came to know we had to access the nuget packages through AWS. Setting that up took time.
 
 ## Improvements Planned
--Integrating Microsoft.EntityFrameworkCore.InMemory 
--Adding search API
+-Integrating SQL database

@@ -25,11 +25,11 @@ namespace TraineeManagement.Api.Services
         public async Task<List<TraineeResponseRequest>> GetAllTrainees()
         {
             List<Trainee> trainees = await _context.Trainees.ToListAsync();
-            return trainees.Select(MapToResponse).ToList();
+            return [.. trainees.Select(MapToResponse)];
         }
         public async Task<TraineeResponseRequest?> GetTraineeById(int id)
         {
-            Trainee? trainee = await _context.Trainees.FirstOrDefaultAsync(t => t.Id == id);
+            Trainee? trainee = await _context.Trainees.FirstOrDefaultAsync(trainee => trainee.Id == id);
 
             if (trainee == null)
             {
@@ -59,7 +59,7 @@ namespace TraineeManagement.Api.Services
 
         public async Task<bool> UpdateTraineeData(int id, UpdateTraineeRequest request)
         {
-            Trainee? trainee = await _context.Trainees.FirstOrDefaultAsync(t => t.Id == id);
+            Trainee? trainee = await _context.Trainees.FirstOrDefaultAsync(trainee => trainee.Id == id);
 
             if (trainee == null)
             {
@@ -76,7 +76,7 @@ namespace TraineeManagement.Api.Services
         }
         public async Task<bool> DeleteTrainee(int id)
         {
-            Trainee? trainee = await _context.Trainees.FirstOrDefaultAsync(t => t.Id == id);
+            Trainee? trainee = await _context.Trainees.FirstOrDefaultAsync(trainee => trainee.Id == id);
 
             if (trainee == null)
             {
@@ -89,16 +89,16 @@ namespace TraineeManagement.Api.Services
         }
         public async Task<List<TraineeResponseRequest>> SearchTrainees(string searchTerm)
         {
-            string formattedSearch = searchTerm.Trim().ToLower();
+            string formattedSearch = searchTerm.ToLower().Trim();
             List<Trainee> trainees = await _context.Trainees
-                .Where(t => 
-                    t.FirstName.ToLower().Contains(formattedSearch) || 
-                    t.LastName.ToLower().Contains(formattedSearch) || 
-                    t.Email.ToLower().Contains(formattedSearch) || 
-                    t.TechStack.ToLower().Contains(formattedSearch))
+                .Where(trainee => 
+                    trainee.FirstName.ToLower().Contains(formattedSearch) || 
+                    trainee.LastName.ToLower().Contains(formattedSearch) || 
+                    trainee.Email.ToLower().Contains(formattedSearch) || 
+                    trainee.TechStack.ToLower().Contains(formattedSearch))
                 .ToListAsync();
 
-            return trainees.Select(MapToResponse).ToList();
+            return [.. trainees.Select(MapToResponse)];
         }
     }
 }
