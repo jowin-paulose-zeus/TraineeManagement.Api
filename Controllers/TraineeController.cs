@@ -6,24 +6,21 @@ namespace TraineeManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TraineeController : ControllerBase
+    public class TraineeController(ITraineeService traineeService) : ControllerBase
     {
-        private readonly ITraineeService _traineeService;
+        private readonly ITraineeService _traineeService = traineeService;
 
-        public TraineeController(ITraineeService traineeService)
-        {
-            _traineeService = traineeService;
-        }
         [HttpGet]
-        public IActionResult GettAllTrainees()
+        public async Task<IActionResult> GettAllTrainees()
         {
-            return Ok(_traineeService.GetAllTrainees());
+            var trainees = await _traineeService.GetAllTrainees();
+            return Ok(trainees);
         }
 
         [HttpGet("id")]
-        public IActionResult GetTraineeById(int id)
+        public async Task<IActionResult> GetTraineeById(int id)
         {
-            TraineeResponseRequest? trainee = _traineeService.GetTraineeById(id);
+            TraineeResponseRequest? trainee = await _traineeService.GetTraineeById(id);
 
             if (trainee == null)
             {
@@ -33,9 +30,9 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddTrainee([FromBody] CreateTraineeRequest request)
+        public async Task<IActionResult> AddTrainee([FromBody] CreateTraineeRequest request)
         {
-            TraineeResponseRequest? trainee = _traineeService.AddTrainee(request);
+            TraineeResponseRequest? trainee = await _traineeService.AddTrainee(request);
 
             return CreatedAtAction(
                 nameof(GetTraineeById),
@@ -45,9 +42,9 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpPut]
-        public IActionResult UpdateTraineeData(int id, UpdateTraineeRequest request)
+        public async Task<IActionResult> UpdateTraineeData(int id, UpdateTraineeRequest request)
         {
-            bool updated = _traineeService.UpdateTraineeData(id, request);
+            bool updated = await _traineeService.UpdateTraineeData(id, request);
 
             if (!updated)
             {
@@ -56,15 +53,21 @@ namespace TraineeManagement.Api.Controllers
             return Ok();
         }
         [HttpDelete("id")]
-        public IActionResult DeleteTrainee(int id)
+        public async Task<IActionResult> DeleteTrainee(int id)
         {
-            bool updated = _traineeService.DeleteTrainee(id);
+            bool updated = await _traineeService.DeleteTrainee(id);
 
             if (!updated)
             {
                 return NotFound();
             }
             return NoContent();
+        }
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchTrainees(string searchTerm)
+        {
+            List<TraineeResponseRequest> trainees = await _traineeService.SearchTrainees(searchTerm);
+            return Ok(trainees);
         }
     }
 

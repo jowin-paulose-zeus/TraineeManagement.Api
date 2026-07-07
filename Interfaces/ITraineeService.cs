@@ -4,10 +4,11 @@ namespace TraineeManagement.Api.Services
 {
     public interface ITraineeService
     {
-        List<TraineeResponseRequest> GetAllTrainees();
-        TraineeResponseRequest? GetTraineeById(int id);
-        TraineeResponseRequest AddTrainee(CreateTraineeRequest request);
-        bool UpdateTraineeData(int id, UpdateTraineeRequest request);
-        bool DeleteTrainee(int id);
+        Task<List<TraineeResponseRequest>> GetAllTrainees();
+        Task<TraineeResponseRequest?> GetTraineeById(int id);
+        Task<TraineeResponseRequest> AddTrainee(CreateTraineeRequest request);
+        Task<bool> UpdateTraineeData(int id, UpdateTraineeRequest request);
+        Task<bool> DeleteTrainee(int id);
+        Task<List<TraineeResponseRequest>> SearchTrainees(string searchTerm);
     }
 }
