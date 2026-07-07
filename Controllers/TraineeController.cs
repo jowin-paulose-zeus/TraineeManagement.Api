@@ -19,11 +19,11 @@ namespace TraineeManagement.Api.Controllers
         {
             return Ok(_traineeService.GetAllTrainees());
         }
-       
+
         [HttpGet("id")]
         public IActionResult GetTraineeById(int id)
         {
-            var trainee = _traineeService.GetTraineeById(id);
+            TraineeResponseRequest? trainee = _traineeService.GetTraineeById(id);
 
             if (trainee == null)
             {
@@ -31,15 +31,15 @@ namespace TraineeManagement.Api.Controllers
             }
             return Ok(trainee);
         }
-    
+
         [HttpPost]
         public IActionResult AddTrainee([FromBody] CreateTraineeRequest request)
         {
-            var trainee = _traineeService.AddTrainee(request);
+            TraineeResponseRequest? trainee = _traineeService.AddTrainee(request);
 
             return CreatedAtAction(
                 nameof(GetTraineeById),
-                new { id = trainee.Id},
+                new { id = trainee.Id },
                 trainee
             );
         }
@@ -47,7 +47,7 @@ namespace TraineeManagement.Api.Controllers
         [HttpPut]
         public IActionResult UpdateTraineeData(int id, UpdateTraineeRequest request)
         {
-            var updated = _traineeService.UpdateTraineeData(id, request);
+            bool updated = _traineeService.UpdateTraineeData(id, request);
 
             if (!updated)
             {
@@ -58,7 +58,7 @@ namespace TraineeManagement.Api.Controllers
         [HttpDelete("id")]
         public IActionResult DeleteTrainee(int id)
         {
-            var updated = _traineeService.DeleteTrainee(id);
+            bool updated = _traineeService.DeleteTrainee(id);
 
             if (!updated)
             {

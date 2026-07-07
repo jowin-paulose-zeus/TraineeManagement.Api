@@ -4,20 +4,21 @@ namespace TraineeManagement.Api.DTOs
 {
     public class UpdateTraineeRequest
     {
-        [Required]
+
         [MaxLength(50)]
-        public required string FirstName { get; set;}
-        [Required]
+        public required string FirstName { get; set; }
+
         [MaxLength(50)]
-        public required string LastName { get; set;}
-        [Required]
+        public required string LastName { get; set; }
+
         [EmailAddress]
-        public required string Email { get; set;}
-        [Required]
-        public required string TechStack { get; set;}
-        [Required]
-        [RegularExpression("(?i)^(Active|Inactive|Completed)$",
-            ErrorMessage ="Status must be Active, Inactive or Completed."),]
-        public required string Status { get; set;}
+        public required string Email { get; set; }
+
+        [MaxLength(100)]
+        public required string TechStack { get; set; }
+
+        [EnumDataType(typeof(TraineeStatus), ErrorMessage = "Invalid trainee status value.Valid values are: 1(Active), 2(Inactive), 3(Completed)")]
+        public required TraineeStatus Status { get; set; }
+
     }
 }
