@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using TraineeManagement.Api.Enums;
 
 namespace TraineeManagement.Api.DTOs
 {

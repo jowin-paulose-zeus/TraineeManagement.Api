@@ -2,7 +2,6 @@ using TraineeManagement.Api.DTOs;
 using TraineeManagement.Api.Models;
 using TraineeManagement.Api.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace TraineeManagement.Api.Services
 {
