@@ -3,7 +3,7 @@ using TraineeManagement.Api.Enums;
 
 namespace TraineeManagement.Api.DTOs
 {
-    public class CreateTraineeRequest
+    public class TraineeRequest
     {
 
         [MaxLength(50)]

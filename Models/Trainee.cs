@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using TraineeManagement.Api.Enums;
 
 namespace TraineeManagement.Api.Models
@@ -12,6 +13,20 @@ namespace TraineeManagement.Api.Models
         public required TraineeStatus Status { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
+
+        public Trainee() { }
+
+        [SetsRequiredMembers]
+        public Trainee(string firstName, string lastName, string email, string techStack, TraineeStatus status)
+        {
+            FirstName = firstName;
+            LastName = lastName;
+            Email = email;
+            TechStack = techStack;
+            Status = status;
+            CreatedDate = DateTime.UtcNow;
+            UpdatedDate = DateTime.UtcNow;
+        }
 
     }
 }

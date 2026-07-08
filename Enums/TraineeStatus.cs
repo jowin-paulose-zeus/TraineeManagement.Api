@@ -1,9 +1,9 @@
 namespace TraineeManagement.Api.Enums
 {
-public enum TraineeStatus
-{
-    Active,
-    Inactive,
-    Completed
-}
+    public enum TraineeStatus
+    {
+        Active,
+        Inactive,
+        Completed
+    }
 }

@@ -9,13 +9,12 @@ namespace TraineeManagement.api.Controllers
         [HttpGet]
         public IActionResult GetHealth()
         {
-            var response = new
+            return Ok(new
             {
                 status = "Running",
                 application = "TraineeManagement.api",
                 timestamp = DateTime.UtcNow
-            };
-            return Ok(response);
+            });
         }
     }
 }

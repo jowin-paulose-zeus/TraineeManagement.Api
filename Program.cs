@@ -2,14 +2,18 @@ using TraineeManagement.Api.Services;
 using TraineeManagement.Api.Data;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<ITraineeService, TraineeService>();
-builder.Services.AddDbContext<TraineeDbContext>(options =>
-    options.UseInMemoryDatabase("TraineeDb"));
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(); // Keeps the .NET 9 OpenAPI generator
+builder.Services.AddDbContext<TraineeDbContext>(options =>
+{
+    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+    options.UseMySQL(connectionString);
+});
 
-var app = builder.Build();
+WebApplication? app = builder.Build();
 
 
 // Configure the HTTP request pipeline.
