@@ -11,7 +11,11 @@ I followed the daily steps provided in the "Three_Day_DotNet_API_InMemory_Traini
 -MySQL
 
 ## API List
--GET/api/trainee/Health
+-GET/api/Health
+
+-POST/api/Auth/register
+-POST/api/Auth/login
+
 -GET/api/trainee/Trainee
 -POST/api/trainee/Trainee
 -PUT/api/trainee/Trainee
@@ -45,6 +49,10 @@ Day 1 (8th July)
     -Added data persistence using MySQL
     -Migrated data and Schema from local MySQL
     -Tested all APIs with SQL Implementation
+Day 2 (9th July)
+    -Added user log in
+    -Password Hashing
+    -Jwt token generation
 
 
 ## How to Run
@@ -64,6 +72,5 @@ Day 1 (8th July)
 -Dotnet Run
 
 ## Improvements Planned
--User Authentication
--password hashing
--JWT token generation
+-Secure APIs
+-Make list APIs scalable
