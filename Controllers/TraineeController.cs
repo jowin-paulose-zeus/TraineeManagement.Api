@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TraineeManagement.Api.DTOs;
 using TraineeManagement.Api.Services;
+using TraineeManagement.Api.Interfaces;
 
 namespace TraineeManagement.Api.Controllers
 {
@@ -31,7 +32,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpGet("id")]
-        public async Task<IActionResult> GetTraineeById( int id)
+        public async Task<IActionResult> GetTraineeById(int id)
         {
             try
             {
