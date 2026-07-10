@@ -2,26 +2,39 @@ using Microsoft.AspNetCore.Mvc;
 using TraineeManagement.Api.DTOs;
 using TraineeManagement.Api.Services;
 using TraineeManagement.Api.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using TraineeManagement.Api.Models;
 
 namespace TraineeManagement.Api.Controllers
 {
     [ApiController]
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
-    public class TraineeController(ITraineeService traineeService, ILogger<TraineeController> logger) : ControllerBase
+    public class TraineeController(ITraineeService traineeService,ILogger<AuthService> logger) : ControllerBase
     {
         private readonly ITraineeService _traineeService = traineeService;
-        private readonly ILogger<TraineeController> _logger = logger;
+        private readonly ILogger<AuthService> _logger = logger;
 
         [HttpGet]
-        public async Task<IActionResult> GettAllTrainees()
+        public async Task<IActionResult> GetTrainees([FromQuery] TraineeQuery query)
         {
+            if (query.PageNumber < 1)
+            {
+                return BadRequest("Page Number must be greater than 0");
+            }
+            if (query.PageSize < 1)
+            {
+                return BadRequest("Page size must be greater than 0");
+            }
             try
             {
-                List<TraineeResponseRequest> trainees = await _traineeService.GetAllTrainees();
+                TraineePagedResponse<TraineeResponseRequest> trainees = await _traineeService.GetTrainees(query);
                 if (trainees == null)
                 {
+                    _logger.LogInformation("Record not found in Trainees");
                     return NotFound();
                 }
+                _logger.LogInformation("Record found in Trainees");
                 return Ok(trainees);
             }
             catch (Exception ex)
@@ -63,6 +76,7 @@ namespace TraineeManagement.Api.Controllers
                     return BadRequest("Could not create the trainee.");
                 }
 
+                _logger.LogInformation("Trainee created: ID {Id} Email:{Email}",trainee.Id,trainee.Email);
                 return CreatedAtAction(
                     nameof(GetTraineeById),
                     new { id = trainee.Id },
@@ -85,8 +99,10 @@ namespace TraineeManagement.Api.Controllers
 
                 if (!updated)
                 {
+                    _logger.LogWarning("Record not found in Trainees");
                     return NotFound();
                 }
+                _logger.LogInformation("Trainee updated. ID: {Id}",id);
                 return Ok();
             }
             catch (Exception ex)
@@ -105,8 +121,10 @@ namespace TraineeManagement.Api.Controllers
 
                 if (!deleted)
                 {
+                    _logger.LogWarning("Record not found in Trainees");
                     return NotFound();
                 }
+                _logger.LogInformation("Trainee deleted. ID: {Id}",id);
                 return NoContent();
             }
             catch (Exception ex)

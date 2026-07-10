@@ -5,17 +5,6 @@ namespace TraineeManagement.Api.Models
 {
     public class Trainee
     {
-        public required int Id { get; set; }
-        public required string FirstName { get; set; }
-        public required string LastName { get; set; }
-        public required string Email { get; set; }
-        public required string TechStack { get; set; }
-        public required TraineeStatus Status { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime UpdatedDate { get; set; }
-
-        public Trainee() { }
-
         [SetsRequiredMembers]
         public Trainee(string firstName, string lastName, string email, string techStack, TraineeStatus status)
         {
@@ -24,9 +13,15 @@ namespace TraineeManagement.Api.Models
             Email = email;
             TechStack = techStack;
             Status = status;
-            CreatedDate = DateTime.UtcNow;
-            UpdatedDate = DateTime.UtcNow;
         }
+        public required int Id { get; set; }
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public required string Email { get; set; }
+        public required string TechStack { get; set; }
+        public required TraineeStatus Status { get; set; }
+        public DateTime CreatedDate { get; set; } 
+        public DateTime UpdatedDate { get; set; } = DateTime.UtcNow;
 
     }
 }

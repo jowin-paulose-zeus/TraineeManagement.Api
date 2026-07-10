@@ -13,7 +13,7 @@ namespace TraineeManagement.Api.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.Username)
+                .HasIndex(user => user.Username)
                 .IsUnique();
         }
     }
