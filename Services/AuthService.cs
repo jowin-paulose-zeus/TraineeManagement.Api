@@ -29,7 +29,7 @@ namespace TraineeManagement.Api.Services
         public async Task<UserResponse> RegisterUserAsync(UserRegisterRequest registerRequest)
         {
             bool usernameExists = await _context.Users
-                .AnyAsync(u => u.Username == registerRequest.Username);
+                .AnyAsync(user => user.Username == registerRequest.Username);
 
             if (usernameExists)
             {
@@ -37,7 +37,7 @@ namespace TraineeManagement.Api.Services
             }
 
             bool emailExists = await _context.Users
-                .AnyAsync(u => u.Email == registerRequest.Email);
+                .AnyAsync(user => user.Email == registerRequest.Email);
 
             if (emailExists)
             {
@@ -54,7 +54,7 @@ namespace TraineeManagement.Api.Services
         public async Task<UserLoginResponse> LoginUserAsync(UserLoginRequest loginRequest)
         {
             User? user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == loginRequest.Username);
+                .FirstOrDefaultAsync(user => user.Username == loginRequest.Username);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
             {

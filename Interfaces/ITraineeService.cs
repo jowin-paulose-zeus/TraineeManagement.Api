@@ -4,7 +4,7 @@ namespace TraineeManagement.Api.Interfaces
 {
     public interface ITraineeService
     {
-        Task<List<TraineeResponseRequest>> GetAllTrainees();
+        Task<TraineePagedResponse<TraineeResponseRequest>> GetTrainees(TraineeQuery query);
         Task<TraineeResponseRequest?> GetTraineeById(int id);
         Task<TraineeResponseRequest> AddTrainee(TraineeRequest request);
         Task<bool> UpdateTraineeData(int id, TraineeRequest request);
