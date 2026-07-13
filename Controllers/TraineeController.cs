@@ -28,7 +28,7 @@ namespace TraineeManagement.Api.Controllers
             }
             try
             {
-                TraineePagedResponse<TraineeResponseRequest> trainees = await _traineeService.GetTrainees(query);
+                PagedResponse<TraineeResponseRequest> trainees = await _traineeService.GetTrainees(query);
                 if (trainees == null)
                 {
                     _logger.LogInformation("Record not found in Trainees");
@@ -95,15 +95,15 @@ namespace TraineeManagement.Api.Controllers
         {
             try
             {
-                bool updated = await _traineeService.UpdateTraineeData(id, request);
+                TraineeResponseRequest? updatedtrainee = await _traineeService.UpdateTraineeData(id, request);
 
-                if (!updated)
+                if (updatedtrainee == null)
                 {
                     _logger.LogWarning("Record not found in Trainees");
                     return NotFound();
                 }
                 _logger.LogInformation("Trainee updated. ID: {Id}",id);
-                return Ok();
+                return Ok(updatedtrainee);
             }
             catch (Exception ex)
             {
@@ -133,22 +133,6 @@ namespace TraineeManagement.Api.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while deleting trainee with ID {id}.");
             }
         }
-
-        [HttpGet("search")]
-        public async Task<IActionResult> SearchTrainees([FromQuery] string searchTerm)
-        {
-            try
-            {
-                List<TraineeResponseRequest> trainees = await _traineeService.SearchTrainees(searchTerm);
-                return Ok(trainees);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in SearchTrainees with term '{searchTerm}'", searchTerm);
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred during the search operation.");
-            }
-        }
-
     }
 
 }

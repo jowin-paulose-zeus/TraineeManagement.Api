@@ -4,8 +4,17 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace TraineeManagement.Api.Models
 {
+    
     public class User
     {
+                [SetsRequiredMembers]
+        public User(string username, string email, string passwordHash, UserRoles role)
+        {
+            Username = username;
+            Email = email;
+            PasswordHash = passwordHash;
+            Role = role;
+        }
         public int Id { get; set; }
         public required string Username { get; set; }
         [EmailAddress]
@@ -13,17 +22,7 @@ namespace TraineeManagement.Api.Models
         public required string PasswordHash { get; set; }
         public required UserRoles Role { get; set; }
         public DateTime CreatedDate { get; set; }
-        public DateTime UpdatedDate { get; set; }
+        public DateTime UpdatedDate { get; set; } = DateTime.UtcNow;
 
-        [SetsRequiredMembers]
-        public User(string username, string email, string passwordHash, UserRoles role)
-        {
-            Username = username;
-            Email = email;
-            PasswordHash = passwordHash;
-            Role = role;
-            CreatedDate = DateTime.UtcNow;
-            UpdatedDate = DateTime.UtcNow;
-        }
     }
 }

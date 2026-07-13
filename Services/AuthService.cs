@@ -44,7 +44,10 @@ namespace TraineeManagement.Api.Services
                 throw new Exception("Email already exists.");
             }
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(registerRequest.Password);
-            User user = new(registerRequest.Username, registerRequest.Email, hashedPassword, registerRequest.Role);
+            User user = new(registerRequest.Username, registerRequest.Email, hashedPassword, registerRequest.Role)
+            {
+                CreatedDate = DateTime.UtcNow
+            };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();

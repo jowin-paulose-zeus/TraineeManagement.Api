@@ -16,5 +16,7 @@ namespace TraineeManagement.Api.Data
                 .HasIndex(user => user.Username)
                 .IsUnique();
         }
+        public DbSet<Mentor> Mentors { get; set; }
+        public DbSet<LearningTask> LearningTasks { get; set; }
     }
 }

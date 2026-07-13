@@ -23,7 +23,7 @@ namespace TraineeManagement.Api.Services
                 Status = trainee.Status.ToString()
             };
         }
-        public async Task<TraineePagedResponse<TraineeResponseRequest>> GetTrainees(TraineeQuery query)
+        public async Task<PagedResponse<TraineeResponseRequest>> GetTrainees(TraineeQuery query)
         {
             IQueryable<Trainee> traineesQuery = _context.Trainees.AsQueryable();
 
@@ -45,6 +45,8 @@ namespace TraineeManagement.Api.Services
             }
             int TotalRecords = await traineesQuery.CountAsync();
 
+            if (query.PageNumber < 1) { query.PageNumber = 1; }
+            if (query.PageSize < 1 || query.PageSize > 50) { query.PageSize = 10; }
 
             traineesQuery = traineesQuery
                 .OrderBy(trainee => trainee.Id)
@@ -53,7 +55,7 @@ namespace TraineeManagement.Api.Services
 
             List<Trainee> trainees = await traineesQuery.ToListAsync();
             List<TraineeResponseRequest> traineeresponse = [.. trainees.Select(MapToResponse)];
-            return new TraineePagedResponse<TraineeResponseRequest>
+            return new PagedResponse<TraineeResponseRequest>
             {
                 PageNumber = query.PageNumber,
                 PageSize = query.PageSize,
@@ -75,28 +77,32 @@ namespace TraineeManagement.Api.Services
         }
         public async Task<TraineeResponseRequest> AddTrainee(TraineeRequest request)
         {
-            Trainee trainee = new(request.FirstName, request.LastName, request.Email, request.TechStack, request.Status);
+            Trainee trainee = new(request.FirstName, request.LastName, request.Email, request.TechStack, request.Status)
+            {
+                CreatedDate = DateTime.UtcNow
+            };
             _context.Trainees.Add(trainee);
             await _context.SaveChangesAsync();
             return MapToResponse(trainee);
         }
 
-        public async Task<bool> UpdateTraineeData(int id, TraineeRequest request)
+        public async Task<TraineeResponseRequest?> UpdateTraineeData(int id, TraineeRequest request)
         {
-            Trainee? trainee = await _context.Trainees.FirstOrDefaultAsync(t => t.Id == id);
+            Trainee? trainee = await _context.Trainees.FirstOrDefaultAsync(trainee => trainee.Id == id);
 
             if (trainee == null)
             {
-                return false;
+                return null;
             }
             trainee.FirstName = request.FirstName;
             trainee.LastName = request.LastName;
             trainee.Email = request.Email;
             trainee.TechStack = request.TechStack;
+            trainee.Status = request.Status;
             trainee.UpdatedDate = DateTime.UtcNow;
             _context.Trainees.Update(trainee);
             await _context.SaveChangesAsync();
-            return true;
+            return MapToResponse(trainee);
         }
         public async Task<bool> DeleteTrainee(int id)
         {
@@ -110,23 +116,6 @@ namespace TraineeManagement.Api.Services
             _context.Trainees.Remove(trainee);
             await _context.SaveChangesAsync();
             return true;
-        }
-        public async Task<List<TraineeResponseRequest>> SearchTrainees(string searchTerm)
-        {
-            if (string.IsNullOrWhiteSpace(searchTerm))
-            {
-                return [];
-            }
-            string formattedSearch = searchTerm.Trim();
-            List<Trainee> trainees = await _context.Trainees
-                .Where(trainee =>
-                    trainee.FirstName.Contains(formattedSearch) ||
-                    trainee.LastName.Contains(formattedSearch) ||
-                    trainee.Email.Contains(formattedSearch) ||
-                    trainee.TechStack.Contains(formattedSearch))
-                .ToListAsync();
-
-            return [.. trainees.Select(MapToResponse)];
         }
     }
 }
