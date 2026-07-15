@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TraineeManagement.Api.Data;
 
@@ -10,9 +11,11 @@ using TraineeManagement.Api.Data;
 namespace TraineeManagement.Api.Migrations
 {
     [DbContext(typeof(TraineeDbContext))]
-    partial class TraineeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260714130424_AddReviewTable")]
+    partial class AddReviewTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -100,9 +103,6 @@ namespace TraineeManagement.Api.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("MentorId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("ReviewedDate")
                         .HasColumnType("datetime(6)");
 
@@ -116,8 +116,6 @@ namespace TraineeManagement.Api.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MentorId");
 
                     b.HasIndex("SubmissionId");
 
@@ -261,35 +259,15 @@ namespace TraineeManagement.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedDate = new DateTime(2026, 7, 15, 6, 23, 37, 666, DateTimeKind.Utc).AddTicks(3726),
-                            Email = "admin@gmail.com",
-                            PasswordHash = "$2a$11$UNsvx2/eJ8vd3.ZuBMaHOuo7ZOfuJYqlEl81QAlEhKGn//WTEtoCe",
-                            Role = 0,
-                            UpdatedDate = new DateTime(2026, 7, 15, 6, 23, 37, 666, DateTimeKind.Utc).AddTicks(3963),
-                            Username = "admin"
-                        });
                 });
 
             modelBuilder.Entity("TraineeManagement.Api.Models.Review", b =>
                 {
-                    b.HasOne("TraineeManagement.Api.Models.Mentor", "Mentor")
-                        .WithMany()
-                        .HasForeignKey("MentorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("TraineeManagement.Api.Models.Submission", "Submission")
                         .WithMany("Reviews")
                         .HasForeignKey("SubmissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Mentor");
 
                     b.Navigation("Submission");
                 });

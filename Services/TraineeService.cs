@@ -27,7 +27,6 @@ namespace TraineeManagement.Api.Services
         {
             IQueryable<Trainee> traineesQuery = _context.Trainees.AsQueryable();
 
-
             if (!string.IsNullOrWhiteSpace(query.Search))
             {
                 string search = query.Search.Trim().ToLower();

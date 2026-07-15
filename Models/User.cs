@@ -7,7 +7,8 @@ namespace TraineeManagement.Api.Models
     
     public class User
     {
-                [SetsRequiredMembers]
+        public User(){}
+        [SetsRequiredMembers]
         public User(string username, string email, string passwordHash, UserRoles role)
         {
             Username = username;

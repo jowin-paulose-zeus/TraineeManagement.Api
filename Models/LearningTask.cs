@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using TraineeManagement.Api.Enums;
 
 namespace TraineeManagement.Api.Models
@@ -6,7 +7,7 @@ namespace TraineeManagement.Api.Models
     public class LearningTask
     {
         [SetsRequiredMembers]
-        public LearningTask(string title, string description, string expectedTechStack,DateTime dueDate, LearningTaskStatus status)
+        public LearningTask(string title, string description, string expectedTechStack, DateTime dueDate, LearningTaskStatus status)
         {
             Title = title;
             Description = description;
@@ -22,6 +23,8 @@ namespace TraineeManagement.Api.Models
         public required LearningTaskStatus Status { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; } = DateTime.UtcNow;
+        [JsonIgnore]
+        public ICollection<TaskAssignment> TaskAssignments { get; set; } = [];
 
     }
 }

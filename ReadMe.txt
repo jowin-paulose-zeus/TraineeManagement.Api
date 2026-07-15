@@ -1,6 +1,5 @@
 This project was made as part of my training to learn dotnet.
-I followed the daily steps provided in the "Three_Day_DotNet_API_InMemory_Training_Plan.pdf"
-3rd July and 6th July 2026 Task
+
 # TraineeMangement.Api
 
 ## Technology Used
@@ -16,12 +15,36 @@ I followed the daily steps provided in the "Three_Day_DotNet_API_InMemory_Traini
 -POST/api/Auth/register
 -POST/api/Auth/login
 
--GET/api/trainee/Trainee
--POST/api/trainee/Trainee
--PUT/api/trainee/Trainee
--GET/api/trainee/Trainee/id
--DELETE/api/trainee/Trainee/Id
--GET/api/trainee/Trainee/search
+-GET/api/Trainee
+-POST/api/Trainee
+-PUT/api/Trainee/id
+-GET/api/Trainee/id
+-DELETE/api/Trainee/Id
+
+-GET/api/Mentor
+-POST/api/Mentor
+-PUT/api/Mentor/id
+-GET/api/Mentor/id
+-DELETE/api/Mentor/id
+
+-GET/api/LearningTask
+-POST/api/LearningTask
+-PUT/api/LearningTask/id
+-GET/api/LearningTask/id
+-DELETE/api/LearningTask/id
+
+-GET/api/TaskAssignment
+-POST/api/TaskAssignment
+-PUT/api/TaskAssignment/id
+-GET/api/TaskAssignment/id
+
+-GET/api/Submission
+-POST/api/Submission
+-GET/api/Submission/id
+
+-GET/api/Review
+-POST/api/Review
+-GET/api/Review/id
 
 ## Features Completed
 
@@ -53,7 +76,19 @@ Day 2 (9th July)
     -Added user log in
     -Password Hashing
     -Jwt token generation
-
+Day 3 (10th July)
+    -Protected APIs JWT token Authorization
+    -Added pagination, search and filter to GET Trainees
+    -Configured Cors for phase 3 react
+    -Added structured logging
+Day 4 (13th July)
+    -Created Mentor module with Get,Get by Id, Post, Put and Delete
+    -Created Learning Task module with Get,Get by Id, Post, Put and Delete
+Day 5 (14th July)
+    -Created Task Assignment Module with Post, Get, Get by Id and Put Api
+    -Created Submission Module with Post, Get and Get by Id
+    -Created Review Module with Post and Get, Get by Id
+    -Global Exception Handling Middleware implemented
 
 ## How to Run
 -Clone Repository
@@ -71,6 +106,19 @@ Day 2 (9th July)
     -dotnet ef database update
 -Dotnet Run
 
+## Login and JWT Authorization for testing
+Admin login is 
+username = "admin"
+password = "admin@123"
+After logging in, in the response body you will find the JWT token labeled as token.
+Copy the token and click on Authorize button. Paste the token in the value field and press Authorize.
+All APIs should be available for testing.
+
+##Security Checklist
+-User Authentication
+-Password Hashing
+-JWT Token Authorization
+-Global Exception Handling
+
 ## Improvements Planned
--Secure APIs
--Make list APIs scalable
+-Adding React Frontend

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using TraineeManagement.Api.Enums;
 
 namespace TraineeManagement.Api.Models
@@ -22,6 +23,8 @@ namespace TraineeManagement.Api.Models
         public required TraineeStatus Status { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; } = DateTime.UtcNow;
+        [JsonIgnore]
+        public ICollection<TaskAssignment> TaskAssignments { get; set; } = [];
 
     }
 }
