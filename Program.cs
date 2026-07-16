@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Serilog;
 using TraineeManagement.API.Middleware;
+using StackExchange.Redis;
 
 WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
@@ -91,15 +92,41 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
             "http://localhost:3000",
             "http://localhost:5173",
-            "https://localhost:5143")
+            "https://localhost:5143",
+            "https://localhost:6379")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
 });
 builder.Services.Configure<FileStorageSettings>(
     builder.Configuration.GetSection("FileStorage"));
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration =
+        builder.Configuration.GetSection("Redis:ConnectionString").Value;
+
+    options.InstanceName = "TraineeManagement:";
+});
 
 WebApplication? app = builder.Build();
+string? redisConnection = app.Configuration["Redis:ConnectionString"];
+
+try
+{
+    if (redisConnection != null){
+    ConnectionMultiplexer? connection = await ConnectionMultiplexer.ConnectAsync(redisConnection);
+    
+    if (connection.IsConnected)
+    {
+        app.Logger.LogInformation("Redis connected successfully.");
+    }
+    }
+}
+catch (Exception ex)
+{
+    app.Logger.LogError(ex, "Unable to connect to Redis.");
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

@@ -43,7 +43,7 @@ namespace TraineeManagement.Api.Controllers
                 return BadRequest("File type extension is not allowed.");
             }
 
-            var submission = await _context.Submissions
+            Submission? submission = await _context.Submissions
                 .FirstOrDefaultAsync(s => s.Id == submissionId);
 
             if (submission == null)
@@ -52,8 +52,8 @@ namespace TraineeManagement.Api.Controllers
             }
 
             string checksum;
-            using (var sha256 = SHA256.Create())
-            using (var stream = file.OpenReadStream())
+            using (SHA256 sha256 = SHA256.Create())
+            using (Stream? stream = file.OpenReadStream())
             {
                 byte[] hashBytes = await sha256.ComputeHashAsync(stream);
                 checksum = Convert.ToHexStringLower(hashBytes);
@@ -70,7 +70,7 @@ namespace TraineeManagement.Api.Controllers
             }
 
 
-            var dbFile = new SubmissionFile
+            SubmissionFile dbFile = new()
             {
                 SubmissionId = submissionId,
                 Submission = submission,

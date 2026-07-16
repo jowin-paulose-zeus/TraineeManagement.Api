@@ -52,15 +52,6 @@ namespace TraineeManagement.Api.Services
             return await Task.FromResult(File.Exists(filePath));
         }
 
-        public async Task DeleteAsync(string fileName)
-        {
-            string filePath = Path.Combine(_storageRoot, fileName);
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
-            }
-            await Task.CompletedTask;
-        }
         public async Task<DownloadSubmissionFileResponse> DownloadAsync(int id)
         {
             SubmissionFile? submissionFile = await _context.SubmissionFiles
