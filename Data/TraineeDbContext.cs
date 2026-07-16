@@ -29,5 +29,6 @@ namespace TraineeManagement.Api.Data
         public DbSet<TaskAssignment> TaskAssignments { get; set; }
         public DbSet<Submission> Submissions { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<SubmissionFile> SubmissionFiles { get; set; }
     }
 }

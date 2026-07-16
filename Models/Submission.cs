@@ -26,5 +26,6 @@ namespace TraineeManagement.Api.Models
         public DateTime SubmissionDate { get; set; }
         public SubmissionStatus Status { get; set; }
         public List<Review?> Reviews { get; set; } = [];
+        public List<SubmissionFile> SubmissionFiles { get; set; } = [];
     }
 }
