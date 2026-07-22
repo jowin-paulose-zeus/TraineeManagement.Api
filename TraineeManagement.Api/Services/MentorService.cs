@@ -67,7 +67,7 @@ namespace TraineeManagement.Api.Services
         {
             Mentor? mentor = await _context.Mentors.FirstOrDefaultAsync(mentor => mentor.Id == id);
 
-            if (mentor == null)
+            if (mentor is null)
             {
                 return null;
             }
@@ -89,7 +89,7 @@ namespace TraineeManagement.Api.Services
         {
             Mentor? mentor = await _context.Mentors.FirstOrDefaultAsync(mentor => mentor.Id == id);
 
-            if (mentor == null)
+            if (mentor is null)
             {
                 return null;
             }
@@ -107,7 +107,7 @@ namespace TraineeManagement.Api.Services
         {
             Mentor? mentor = await _context.Mentors.FirstOrDefaultAsync(mentor => mentor.Id == id);
 
-            if (mentor == null)
+            if (mentor is null)
             {
                 return false;
             }

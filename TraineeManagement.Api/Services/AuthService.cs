@@ -59,7 +59,7 @@ namespace TraineeManagement.Api.Services
             User? user = await _context.Users
                 .FirstOrDefaultAsync(user => user.Username == loginRequest.Username);
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
+            if (user is null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
             {
                 throw new Exception("Invalid username or password.");
             }

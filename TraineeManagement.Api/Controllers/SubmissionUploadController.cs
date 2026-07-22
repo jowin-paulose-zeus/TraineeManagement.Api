@@ -51,7 +51,7 @@ namespace TraineeManagement.Api.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while processing your request." });
             }
         }
-        [HttpGet("submission-files/{id:int}/download")]
+        [HttpGet("{id:int}/download")]
         public async Task<IActionResult> Download(int id)
         {
             DownloadSubmissionFileResponse? response = await _storageService.DownloadAsync(id);
@@ -61,7 +61,7 @@ namespace TraineeManagement.Api.Controllers
                 response.ContentType,
                 response.FileName);
         }
-        [HttpDelete("submission-files/{id:int}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             await _storageService.DeleteAsync(id);

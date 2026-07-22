@@ -1,4 +1,4 @@
-using TraineeManagement.Contracts.Contracts;
+using TraineeManagement.Data.Contracts;
 
 namespace TraineeManagement.Worker.Interfaces
 {

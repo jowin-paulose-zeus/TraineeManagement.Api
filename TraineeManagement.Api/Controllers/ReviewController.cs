@@ -18,7 +18,7 @@ namespace TraineeManagement.Api.Controllers
             
             ReviewResponse? review = await reviewService.AddReview(request);
 
-            if (review == null)
+            if (review is null)
             {
                 logger.LogWarning("Review creation failed.");
                 return BadRequest("Invalid trainee, task assignment, or review details.");
@@ -44,7 +44,7 @@ namespace TraineeManagement.Api.Controllers
 
             ReviewResponse? review = await reviewService.GetReviewById(id);
 
-            if (review == null)
+            if (review is null)
             {
                 logger.LogWarning("Review not found. Id: {Id}", id);
                 return NotFound();

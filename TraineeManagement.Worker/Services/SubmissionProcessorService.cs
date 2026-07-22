@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using TraineeManagement.Contracts.Contracts;
+using TraineeManagement.Data.Contracts;
 using TraineeManagement.Data.Configuration;
 using TraineeManagement.Data.Data;
 using TraineeManagement.Data.Enums;
@@ -64,7 +64,7 @@ public class SubmissionProcessorService(TraineeDbContext context, ILogger<Submis
                 file => file.Id == request.FileId,
                 cancellationToken);
 
-        if (submissionFile == null)
+        if (submissionFile is null)
         {
             submission.Status = SubmissionStatus.Failed;
             await _context.SaveChangesAsync(cancellationToken);

@@ -29,7 +29,7 @@ namespace TraineeManagement.Api.Controllers
             try
             {
                 PagedResponse<LearningTaskResponse> learningtasks = await _learningtaskService.GetLearningTasks(query);
-                if (learningtasks == null)
+                if (learningtasks is null)
                 {
                     _logger.LogInformation("Record not found in LearningTasks");
                     return NotFound();
@@ -51,7 +51,7 @@ namespace TraineeManagement.Api.Controllers
             {
                 LearningTaskResponse? learningtask = await _learningtaskService.GetLearningTaskById(id);
 
-                if (learningtask == null)
+                if (learningtask is null)
                 {
                     return NotFound();
                 }
@@ -71,7 +71,7 @@ namespace TraineeManagement.Api.Controllers
             {
                 LearningTaskResponse? learningtask = await _learningtaskService.AddLearningTask(request);
 
-                if (learningtask == null)
+                if (learningtask is null)
                 {
                     return BadRequest("Could not create the learningtask.");
                 }
@@ -97,7 +97,7 @@ namespace TraineeManagement.Api.Controllers
             {
                 LearningTaskResponse? updatedlearningtask = await _learningtaskService.UpdateLearningTaskData(id, request);
 
-                if (updatedlearningtask == null)
+                if (updatedlearningtask is null)
                 {
                     _logger.LogWarning("Record not found in LearningTask");
                     return NotFound();

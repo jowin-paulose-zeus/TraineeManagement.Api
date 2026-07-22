@@ -21,7 +21,7 @@ namespace TraineeManagement.Api.Controllers
 
             TaskAssignmentResponse? assignment = await _taskAssignmentService.AddTaskAssignment(request);
 
-            if (assignment == null)
+            if (assignment is null)
             {
                 _logger.LogWarning("Task assignment creation failed.");
 
@@ -50,7 +50,7 @@ namespace TraineeManagement.Api.Controllers
 
             TaskAssignmentResponse? assignment = await _taskAssignmentService.GetTaskAssignmentById(id);
 
-            if (assignment == null)
+            if (assignment is null)
             {
                 _logger.LogWarning("Task assignment not found. Id: {Id}", id);
 
@@ -67,7 +67,7 @@ namespace TraineeManagement.Api.Controllers
 
             TaskAssignmentResponse? assignment = await _taskAssignmentService.UpdateTaskAssignment(id, request);
 
-            if (assignment == null)
+            if (assignment is null)
             {
                 _logger.LogWarning("Task assignment not found or update failed. Id: {Id}", id);
 

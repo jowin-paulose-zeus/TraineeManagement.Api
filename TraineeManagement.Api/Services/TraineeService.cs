@@ -87,7 +87,7 @@ namespace TraineeManagement.Api.Services
             Trainee? trainee = await _context.Trainees
                 .FirstOrDefaultAsync(t => t.Id == id);
 
-            if (trainee == null)
+            if (trainee is null)
             {
                 return null;
             }
@@ -130,7 +130,7 @@ namespace TraineeManagement.Api.Services
         {
             Trainee? trainee = await _context.Trainees.FirstOrDefaultAsync(trainee => trainee.Id == id);
 
-            if (trainee == null)
+            if (trainee is null)
             {
                 return null;
             }
@@ -157,7 +157,7 @@ namespace TraineeManagement.Api.Services
         {
             Trainee? trainee = await _context.Trainees.FirstOrDefaultAsync(t => t.Id == id);
 
-            if (trainee == null)
+            if (trainee is null)
             {
                 return false;
             }

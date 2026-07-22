@@ -7,7 +7,7 @@ using TraineeManagement.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using TraineeManagement.Data.Enums;
 using System.Security.Cryptography;
-using TraineeManagement.Contracts.Contracts;
+using TraineeManagement.Data.Contracts;
 
 namespace TraineeManagement.Api.Services
 {
@@ -98,13 +98,11 @@ namespace TraineeManagement.Api.Services
         }
         public async Task<FileStorageResponse> Upload(int submissionId, IFormFile file)
         {
-            if (file == null || file.Length == 0)
+
+            if (file is null || file.Length == 0)
             {
-                if (file == null || file.Length == 0)
-                {
-                    _logger.LogError("File is missing or empty.");
-                    throw new ArgumentException("File is missing or empty.");
-                }
+                _logger.LogError("File is missing or empty.");
+                throw new ArgumentException("File is missing or empty.");
             }
 
             if (file.Length > _fileStorageSettings.Value.MaxFileSize)
@@ -123,7 +121,7 @@ namespace TraineeManagement.Api.Services
             Submission? submission = await _context.Submissions
                 .FirstOrDefaultAsync(s => s.Id == submissionId);
 
-            if (submission == null)
+            if (submission is null)
             {
                 _logger.LogError("Submission record not found.");
                 throw new ArgumentException("Submission record not found.");
@@ -140,7 +138,7 @@ namespace TraineeManagement.Api.Services
             string storageFileName;
             try
             {
-                storageFileName = await this.SaveAsync(file);
+                storageFileName = await SaveAsync(file);
             }
             catch (Exception)
             {

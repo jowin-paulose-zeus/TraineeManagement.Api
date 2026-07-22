@@ -43,7 +43,7 @@ namespace TraineeManagement.Api.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(review => review.Id == id);
 
-            if (review == null) return null;
+            if (review is null) return null;
 
             return MapToResponse(review);
         }
@@ -61,7 +61,7 @@ namespace TraineeManagement.Api.Services
                     .ThenInclude(ta => ta.Mentor)
                 .FirstOrDefaultAsync(s => s.Id == request.SubmissionId);
 
-            if (submission == null) return null;
+            if (submission is null) return null;
 
             Review review = new(submission, submission.TaskAssignment.Mentor, request.Feedback, request.Status, request.Score);
 

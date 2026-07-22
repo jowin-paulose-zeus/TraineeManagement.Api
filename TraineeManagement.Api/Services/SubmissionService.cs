@@ -66,7 +66,7 @@ namespace TraineeManagement.Api.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(submission => submission.Id == id);
 
-            if (submission == null) return null;
+            if (submission is null) return null;
             SubmissionResponse? response = MapToResponse(submission);
 
             DistributedCacheEntryOptions cacheOptions = new()
@@ -104,7 +104,7 @@ namespace TraineeManagement.Api.Services
                 .Include(taskassignment => taskassignment.LearningTask)
                 .FirstOrDefaultAsync(taskassignment => taskassignment.Id == request.TaskAssignmentId);
 
-            if (taskAssignment == null) return null;
+            if (taskAssignment is null) return null;
 
             Submission submission = new(taskAssignment, request.SubmissionUrl, request.Status, request.Notes);
 

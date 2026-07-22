@@ -66,7 +66,7 @@ namespace TraineeManagement.Api.Services
         {
             LearningTask? learningtask = await _context.LearningTasks.FirstOrDefaultAsync(learningtask => learningtask.Id == id);
 
-            if (learningtask == null)
+            if (learningtask is null)
             {
                 return null;
             }
@@ -88,7 +88,7 @@ namespace TraineeManagement.Api.Services
         {
             LearningTask? learningtask = await _context.LearningTasks.FirstOrDefaultAsync(learningtask => learningtask.Id == id);
 
-            if (learningtask == null)
+            if (learningtask is null)
             {
                 return null;
             }
@@ -106,7 +106,7 @@ namespace TraineeManagement.Api.Services
         {
             LearningTask? learningtask = await _context.LearningTasks.FirstOrDefaultAsync(learningtask => learningtask.Id == id);
 
-            if (learningtask == null)
+            if (learningtask is null)
             {
                 return false;
             }

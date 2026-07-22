@@ -40,7 +40,7 @@ namespace TraineeManagement.Api.Services
                 .AsNoTracking()
                 .ToListAsync();
 
-            if (taskAssignments == null || taskAssignments.Count == 0)
+            if (taskAssignments is null || taskAssignments.Count == 0)
             {
                 return [];
             }
@@ -51,19 +51,19 @@ namespace TraineeManagement.Api.Services
         public async Task<TaskAssignmentResponse?> AddTaskAssignment(TaskAssignmentRequest request)
         {
             Trainee? trainee = await _context.Trainees.FirstOrDefaultAsync(trainee => trainee.Id == request.TraineeId);
-            if (trainee == null)
+            if (trainee is null)
             {
                 return null;
 
             }
             Mentor? mentor = await _context.Mentors.FirstOrDefaultAsync(mentor => mentor.Id == request.TraineeId);
-            if (mentor == null)
+            if (mentor is null)
             {
                 return null;
 
             }
             LearningTask? learningTask = await _context.LearningTasks.FirstOrDefaultAsync(learningTask => learningTask.Id == request.TraineeId);
-            if (learningTask == null)
+            if (learningTask is null)
             {
                 return null;
             }
@@ -100,7 +100,7 @@ namespace TraineeManagement.Api.Services
             .Include(learningtask => learningtask.LearningTask)
             .FirstOrDefaultAsync(taskAssignment => taskAssignment.Id == id);
 
-            if (taskAssignment == null)
+            if (taskAssignment is null)
             {
                 return null;
             }
@@ -135,19 +135,19 @@ namespace TraineeManagement.Api.Services
                 .Include(ta => ta.LearningTask)
                 .FirstOrDefaultAsync(ta => ta.Id == id);
 
-            if (assignment == null) return null;
+            if (assignment is null) return null;
 
             Trainee? trainee = await _context.Trainees
                 .FirstOrDefaultAsync(t => t.Id == request.TraineeId);
-            if (trainee == null) return null;
+            if (trainee is null) return null;
 
             Mentor? mentor = await _context.Mentors
                 .FirstOrDefaultAsync(m => m.Id == request.MentorId);
-            if (mentor == null) return null;
+            if (mentor is null) return null;
 
             LearningTask? learningTask = await _context.LearningTasks
                 .FirstOrDefaultAsync(lt => lt.Id == request.LearningTaskId);
-            if (learningTask == null) return null;
+            if (learningTask is null) return null;
 
             if (request.DueDate < request.AssignedDate) return null;
 

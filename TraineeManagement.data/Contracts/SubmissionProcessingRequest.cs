@@ -1,4 +1,4 @@
-namespace TraineeManagement.Contracts.Contracts
+namespace TraineeManagement.Data.Contracts
 {
     public class SubmissionProcessingRequest
     {

@@ -13,6 +13,8 @@ using TraineeManagement.API.Middleware;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using TraineeManagement.Api.Clients;
+using Microsoft.Extensions.Options;
 
 WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
@@ -32,6 +34,24 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 builder.Services.AddScoped<IRabbitMQService, RabbitMQService>();
 builder.Services.AddScoped<IProcessingJobService, ProcessingJobService>();
+builder.Services.Configure<TrainingDirectorySettings>(
+    builder.Configuration.GetSection("TrainingDirectory"));
+builder.Services.AddHttpClient<
+    ITrainingDirectoryClient,
+    TrainingDirectoryClient>(
+    (serviceProvider, client) =>
+    {
+        var settings = serviceProvider
+            .GetRequiredService<IOptions<TrainingDirectorySettings>>()
+            .Value;
+
+        client.BaseAddress = new Uri(settings.BaseUrl);
+        client.DefaultRequestHeaders.Add("Accept", "application/json");
+    })
+    .AddStandardResilienceHandler(options =>
+    {
+        options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+    });
 builder.Services.AddControllers();
 builder.Services.AddDbContext<TraineeDbContext>(options =>
 {
@@ -118,13 +138,13 @@ builder.Services.Configure<RabbitMQSettings>(
 
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = long.MaxValue; // Removes multipart limit
-    options.ValueLengthLimit = int.MaxValue;          // Removes single form value limit
-    options.MemoryBufferThreshold = int.MaxValue;     // Optional memory buffer bump
+    options.MultipartBodyLengthLimit = long.MaxValue; 
+    options.ValueLengthLimit = int.MaxValue;          
+    options.MemoryBufferThreshold = int.MaxValue;
 });
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
-    options.Limits.MaxRequestBodySize = long.MaxValue; // Removes total request size cap
+    options.Limits.MaxRequestBodySize = long.MaxValue;
 });
 WebApplication? app = builder.Build();
 string? redisConnection = app.Configuration["Redis:ConnectionString"];

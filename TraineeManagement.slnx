@@ -1,6 +1,6 @@
 <Solution>
   <Project Path="TraineeManagement.Api/TraineeManagement.Api.csproj" />
-  <Project Path="TraineeManagement.Contracts/TraineeManagement.Contracts.csproj" />
   <Project Path="TraineeManagement.Data/TraineeManagement.Data.csproj" />
   <Project Path="TraineeManagement.Worker/TraineeManagement.Worker.csproj" />
+  <Project Path="TrainingDirectory.Api/TrainingDirectory.Api.csproj" />
 </Solution>

@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using TraineeManagement.Contracts.Contracts;
+using TraineeManagement.Data.Contracts;
 using TraineeManagement.Worker.Configuration;
 using TraineeManagement.Worker.Interfaces;
 using TraineeManagement.Data.Models;
@@ -83,7 +83,7 @@ public class Worker(
 
             SubmissionProcessingRequest? message = JsonSerializer.Deserialize<SubmissionProcessingRequest>(json);
 
-            if (message == null)
+            if (message is null)
             {
                 _logger.LogWarning("Received an invalid message.");
 
@@ -125,7 +125,7 @@ public class Worker(
                         j => j.MessageId == message.MessageId,
                         stoppingToken);
 
-                if (job == null)
+                if (job is null)
                 {
                     _logger.LogError(
                         "ProcessingJob not found for MessageId {MessageId}",

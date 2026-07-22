@@ -29,7 +29,7 @@ namespace TraineeManagement.Api.Controllers
             try
             {
                 PagedResponse<TraineeResponseRequest> trainees = await _traineeService.GetTrainees(query);
-                if (trainees == null)
+                if (trainees is null)
                 {
                     _logger.LogInformation("Record not found in Trainees");
                     return NotFound();
@@ -51,7 +51,7 @@ namespace TraineeManagement.Api.Controllers
             {
                 TraineeResponseRequest? trainee = await _traineeService.GetTraineeById(id);
 
-                if (trainee == null)
+                if (trainee is null)
                 {
                     return NotFound();
                 }
@@ -71,7 +71,7 @@ namespace TraineeManagement.Api.Controllers
             {
                 TraineeResponseRequest? trainee = await _traineeService.AddTrainee(request);
 
-                if (trainee == null)
+                if (trainee is null)
                 {
                     return BadRequest("Could not create the trainee.");
                 }
@@ -97,7 +97,7 @@ namespace TraineeManagement.Api.Controllers
             {
                 TraineeResponseRequest? updatedtrainee = await _traineeService.UpdateTraineeData(id, request);
 
-                if (updatedtrainee == null)
+                if (updatedtrainee is null)
                 {
                     _logger.LogWarning("Record not found in Trainees");
                     return NotFound();

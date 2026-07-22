@@ -29,7 +29,7 @@ namespace TraineeManagement.Api.Controllers
             try
             {
                 PagedResponse<MentorResponse> mentors = await _mentorService.GetMentors(query);
-                if (mentors == null)
+                if (mentors is null)
                 {
                     _logger.LogInformation("Record not found in Mentors");
                     return NotFound();
@@ -51,7 +51,7 @@ namespace TraineeManagement.Api.Controllers
             {
                 MentorResponse? mentor = await _mentorService.GetMentorById(id);
 
-                if (mentor == null)
+                if (mentor is null)
                 {
                     return NotFound();
                 }
@@ -71,7 +71,7 @@ namespace TraineeManagement.Api.Controllers
             {
                 MentorResponse? mentor = await _mentorService.AddMentor(request);
 
-                if (mentor == null)
+                if (mentor is null)
                 {
                     return BadRequest("Could not create the mentor.");
                 }
@@ -97,7 +97,7 @@ namespace TraineeManagement.Api.Controllers
             {
                 MentorResponse? updatedmentor = await _mentorService.UpdateMentorData(id, request);
 
-                if (updatedmentor == null)
+                if (updatedmentor is null)
                 {
                     _logger.LogWarning("Record not found in Mentor");
                     return NotFound();
