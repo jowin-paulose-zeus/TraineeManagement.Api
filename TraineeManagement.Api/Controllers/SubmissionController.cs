@@ -67,7 +67,7 @@ namespace TraineeManagement.Api.Controllers
             {
                 string correlationId = Guid.NewGuid().ToString();
 
-                var profile = await _trainingDirectoryClient.GetProcessingProfileAsync(
+                ProcessingProfileResponse profile = await _trainingDirectoryClient.GetProcessingProfileAsync(
                     submissionId,
                     correlationId,
                     cancellationToken);

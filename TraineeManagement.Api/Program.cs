@@ -41,7 +41,7 @@ builder.Services.AddHttpClient<
     TrainingDirectoryClient>(
     (serviceProvider, client) =>
     {
-        var settings = serviceProvider
+        TrainingDirectorySettings settings = serviceProvider
             .GetRequiredService<IOptions<TrainingDirectorySettings>>()
             .Value;
 
