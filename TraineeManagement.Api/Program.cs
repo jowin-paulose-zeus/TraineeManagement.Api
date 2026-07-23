@@ -15,6 +15,9 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using TraineeManagement.Api.Clients;
 using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 
 WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
@@ -119,7 +122,8 @@ builder.Services.AddCors(options =>
             "http://localhost:5173",
             "https://localhost:5143",
             "https://localhost:6379",
-            "https://localhost:3306")
+            "https://localhost:3306",
+            "https://localhost:5044")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -133,31 +137,65 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
     options.InstanceName = "TraineeManagement:";
 });
-builder.Services.Configure<RabbitMQSettings>(
-    builder.Configuration.GetSection("RabbitMQ"));
+var RabbitMQSettings = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMQSettings>()
+    ?? throw new InvalidOperationException("RabbitMQ configuration is missing.");
+
+builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMQ"));
+
+RabbitMQSettings rabbitMQSettings = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMQSettings>()
+    ?? throw new InvalidOperationException("RabbitMq configuration missing");
+string connectionStringRabbitMq = $"amqp://{RabbitMQSettings.Username}:{RabbitMQSettings.Password}@{RabbitMQSettings.Host}:{RabbitMQSettings.Port}/{RabbitMQSettings.VirtualHost}";
 
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = long.MaxValue; 
-    options.ValueLengthLimit = int.MaxValue;          
+    options.MultipartBodyLengthLimit = long.MaxValue;
+    options.ValueLengthLimit = int.MaxValue;
     options.MemoryBufferThreshold = int.MaxValue;
 });
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
     options.Limits.MaxRequestBodySize = long.MaxValue;
 });
+var trainingDirectoryUrl = builder.Configuration["TrainingDirectory:ApiUrl"] 
+    ?? throw new InvalidOperationException("TrainingDirectory BaseUrl is missing from configuration.");
+
+string[] tags = ["ready"];
+builder.Services.AddHealthChecks()
+    .AddMySql(
+        connectionString: builder.Configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("MySQL connection string is missing."),
+        name: "mysql")
+    .AddRedis(
+        redisConnectionString: builder.Configuration.GetSection("Redis:ConnectionString").Value
+            ?? throw new InvalidOperationException("Redis connection string is missing."),
+        name: "redis")
+    .AddRabbitMQ(factory: serviceProvider =>
+        {
+           ConnectionFactory? factory = new()
+           {
+                HostName = rabbitMQSettings.Host,
+                Port = rabbitMQSettings.Port,
+                UserName = rabbitMQSettings.Username,
+                Password = rabbitMQSettings.Password,
+                VirtualHost = rabbitMQSettings.VirtualHost
+            };
+            return factory.CreateConnectionAsync();
+        }, name: "rabbitmq", tags: tags)
+    .AddUrlGroup(new Uri(trainingDirectoryUrl), name: "training-directory", tags: tags);
+
 WebApplication? app = builder.Build();
 string? redisConnection = app.Configuration["Redis:ConnectionString"];
 
 try
 {
-    if (redisConnection != null){
-    ConnectionMultiplexer? connection = await ConnectionMultiplexer.ConnectAsync(redisConnection);
-    
-    if (connection.IsConnected)
+    if (redisConnection != null)
     {
-        app.Logger.LogInformation("Redis connected successfully.");
-    }
+        ConnectionMultiplexer? connection = await ConnectionMultiplexer.ConnectAsync(redisConnection);
+
+        if (connection.IsConnected)
+        {
+            app.Logger.LogInformation("Redis connected successfully.");
+        }
     }
 }
 catch (Exception ex)
@@ -165,7 +203,6 @@ catch (Exception ex)
     app.Logger.LogError(ex, "Unable to connect to Redis.");
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi(); // Generates /openapi/v1.json
@@ -175,6 +212,16 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 app.UseCors("ReactPolicy");
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using TraineeManagement.Api.DTOs;
+using System.Net.Mime;
 
 namespace TraineeManagement.API.Middleware
 {
@@ -22,7 +23,7 @@ namespace TraineeManagement.API.Middleware
                 "An unhandled exception occurred while processing the request.");
 
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                context.Response.ContentType = "application/json";
+                context.Response.ContentType = MediaTypeNames.Application.Json;
 
                 ErrorResponse response = new()
                 {

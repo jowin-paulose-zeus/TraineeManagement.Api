@@ -188,7 +188,7 @@ namespace TraineeManagement.Api.Services
 
             try
             {
-                await _rabbitMQService.PublishSubmissionAsync(message);
+                await _rabbitMQService.RabbitMQPublish(message);
 
                 _logger.LogInformation(
                     "RabbitMQ publish successful. MessageId: {MessageId}, CorrelationId: {CorrelationId}, SubmissionId: {SubmissionId}",

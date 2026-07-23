@@ -21,6 +21,8 @@ public class Worker(
     private readonly ILogger<Worker> _logger = logger;
     private readonly RabbitMQSettings _settings = options.Value;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private IConnection? connection;
+    private IChannel? channel;
     private const int MaxRetryAttempts = 3;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -34,49 +36,53 @@ public class Worker(
             Password = _settings.Password
         };
 
-        using IConnection? connection = factory.CreateConnection();
-        using IModel? channel = connection.CreateModel();
+        connection = await factory.CreateConnectionAsync(stoppingToken);
+        channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
-
-        channel.ExchangeDeclare(
+        await channel.ExchangeDeclareAsync(
             exchange: _settings.DeadLetterExchange,
             type: ExchangeType.Direct,
             durable: true,
-            autoDelete: false);
+            autoDelete: false,
+            cancellationToken: stoppingToken);
 
-        Dictionary<string, object> arguments = new()
-        {
-            { "x-dead-letter-exchange", _settings.DeadLetterExchange },
-            { "x-dead-letter-routing-key", _settings.DeadLetterQueue }
-        };
+            Dictionary<string, object?> arguments = new()
+            {
+                { "x-dead-letter-exchange", _settings.DeadLetterExchange },
+                { "x-dead-letter-routing-key", _settings.DeadLetterQueue }
+            };
 
-        channel.QueueDeclare(
+        await channel.QueueDeclareAsync(
             queue: _settings.QueueName,
             durable: true,
             exclusive: false,
             autoDelete: false,
-            arguments: arguments);
+            arguments: arguments,
+            cancellationToken: stoppingToken);
 
-        channel.QueueDeclare(
+        await channel.QueueDeclareAsync(
             queue: _settings.DeadLetterQueue,
             durable: true,
             exclusive: false,
             autoDelete: false,
-            arguments: null);
+            arguments: null,
+            cancellationToken: stoppingToken);
 
-        channel.QueueBind(
+        await channel.QueueBindAsync(
             queue: _settings.DeadLetterQueue,
             exchange: _settings.DeadLetterExchange,
-            routingKey: _settings.DeadLetterQueue);
+            routingKey: _settings.DeadLetterQueue,
+            cancellationToken: stoppingToken);
 
-        channel.BasicQos(
+        await channel.BasicQosAsync(
             prefetchSize: 0,
             prefetchCount: 1,
-            global: false);
+            global: false,
+            cancellationToken: stoppingToken);
 
-        EventingBasicConsumer? consumer = new(channel);
+        AsyncEventingBasicConsumer consumer = new(channel);
 
-        consumer.Received += async (sender, ea) =>
+        consumer.ReceivedAsync += async (sender, ea) =>
         {
             byte[] body = ea.Body.ToArray();
             string json = Encoding.UTF8.GetString(body);
@@ -87,57 +93,50 @@ public class Worker(
             {
                 _logger.LogWarning("Received an invalid message.");
 
-                channel.BasicNack(
+                await channel.BasicRejectAsync(
                     deliveryTag: ea.DeliveryTag,
-                    multiple: false,
-                    requeue: false);
+                    requeue: false,
+                    cancellationToken: stoppingToken);
 
                 return;
             }
 
             using IServiceScope? scope = _serviceProvider.CreateScope();
-
-            ISubmissionProcessorService? processor = scope.ServiceProvider
-                .GetRequiredService<ISubmissionProcessorService>();
+            ISubmissionProcessorService? processor = scope.ServiceProvider.GetRequiredService<ISubmissionProcessorService>();
 
             try
             {
                 await processor.ProcessAsync(message, stoppingToken);
 
-                channel.BasicAck(
+                await channel.BasicAckAsync(
                     deliveryTag: ea.DeliveryTag,
-                    multiple: false);
+                    multiple: false,
+                    cancellationToken: stoppingToken);
 
-                _logger.LogInformation(
-                    "Successfully processed SubmissionId {SubmissionId}",
-                    message.SubmissionId);
+                _logger.LogInformation("Successfully processed SubmissionId {SubmissionId}", message.SubmissionId);
             }
-
             catch (Exception ex)
             {
                 using IServiceScope? retryScope = _serviceProvider.CreateScope();
-
-                TraineeDbContext? context = retryScope.ServiceProvider
-                    .GetRequiredService<TraineeDbContext>();
+                TraineeDbContext? context = retryScope.ServiceProvider.GetRequiredService<TraineeDbContext>();
 
                 ProcessingJob? job = await context.ProcessingJobs
-                    .FirstOrDefaultAsync(
-                        j => j.MessageId == message.MessageId,
-                        stoppingToken);
+                    .FirstOrDefaultAsync(j => j.MessageId == message.MessageId, stoppingToken);
 
                 if (job is null)
                 {
-                    _logger.LogError(
-                        "ProcessingJob not found for MessageId {MessageId}",
-                        message.MessageId);
+                    _logger.LogError("ProcessingJob not found for MessageId {MessageId}", message.MessageId);
 
-                    channel.BasicNack(
+                    await channel.BasicNackAsync(
                         ea.DeliveryTag,
-                        false,
-                        false);
+                        multiple: false,
+                        requeue: true,
+                        cancellationToken: stoppingToken);
 
                     return;
                 }
+
+                job.Attempts++;
 
                 if (job.Attempts >= MaxRetryAttempts)
                 {
@@ -147,42 +146,37 @@ public class Worker(
 
                     await context.SaveChangesAsync(stoppingToken);
 
-                    _logger.LogError(
-                        ex,
-                        "SubmissionId {SubmissionId} exceeded the maximum retry attempts.",
-                        message.SubmissionId);
+                    _logger.LogError(ex, "SubmissionId {SubmissionId} exceeded max retry attempts.", message.SubmissionId);
 
-                    channel.BasicNack(
-                        ea.DeliveryTag,
-                        false,
-                        false);
+                    await channel.BasicNackAsync(
+                        deliveryTag: ea.DeliveryTag,
+                        multiple: false,
+                        requeue: false,
+                        cancellationToken: stoppingToken); 
                 }
                 else
                 {
-                    _logger.LogWarning(
-                        ex,
-                        "Retry {Attempt}/{MaxRetryAttempts} for SubmissionId {SubmissionId}",
-                        job.Attempts,
-                        MaxRetryAttempts,
-                        message.SubmissionId);
+                    await context.SaveChangesAsync(stoppingToken);
 
-                    channel.BasicNack(
-                        ea.DeliveryTag,
-                        false,
-                        true);
+                    _logger.LogWarning(ex, "Retry {Attempt}/{MaxRetryAttempts} for SubmissionId {SubmissionId}", 
+                        job.Attempts, MaxRetryAttempts, message.SubmissionId);
+
+                    await channel.BasicNackAsync(
+                        deliveryTag: ea.DeliveryTag,
+                        multiple: false,
+                        requeue: true,
+                        cancellationToken: stoppingToken);
                 }
             }
-
         };
 
-        channel.BasicConsume(
+        await channel.BasicConsumeAsync(
             queue: _settings.QueueName,
-                autoAck: false,
-                consumer: consumer);
+            autoAck: false,
+            consumer: consumer,
+            cancellationToken: stoppingToken);
 
-        _logger.LogInformation(
-            "Worker started. Waiting for messages on queue {QueueName}.",
-            _settings.QueueName);
+        _logger.LogInformation("Worker started. Waiting for messages on queue {QueueName}.", _settings.QueueName);
 
         while (!stoppingToken.IsCancellationRequested)
         {

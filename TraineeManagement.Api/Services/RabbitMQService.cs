@@ -7,13 +7,17 @@ using TraineeManagement.Api.Configuration;
 
 namespace TraineeManagement.Api.Services
 {
-    public class RabbitMQService(IOptions<RabbitMQSettings> options) : IRabbitMQService
+    public class RabbitMQService : IRabbitMQService, IAsyncDisposable
     {
-        private readonly RabbitMQSettings _settings = options.Value;
+        private readonly RabbitMQSettings _settings;
+        private readonly ConnectionFactory _factory;
+        private IConnection? _connection;
+        private readonly SemaphoreSlim _connectionLock = new(1, 1);
 
-        public Task PublishSubmissionAsync<T>(T message)
+        public RabbitMQService(IOptions<RabbitMQSettings> options)
         {
-            ConnectionFactory factory = new()
+            _settings = options.Value;
+            _factory = new ConnectionFactory
             {
                 HostName = _settings.Host,
                 Port = _settings.Port,
@@ -21,40 +25,79 @@ namespace TraineeManagement.Api.Services
                 UserName = _settings.Username,
                 Password = _settings.Password
             };
+        }
 
-            using IConnection connection = factory.CreateConnection();
-            Console.WriteLine("Connected to RabbitMQ Succesfully");
+        private async Task<IConnection> GetConnectionAsync()
+        {
+            if (_connection != null) return _connection;
 
-            using IModel channel = connection.CreateModel();
-
-            Dictionary<string, object> arguments = new()
+            await _connectionLock.WaitAsync();
+            try
             {
-                { "x-dead-letter-exchange", _settings.DeadLetterExchange },
-                { "x-dead-letter-routing-key", _settings.DeadLetterQueue }
-            };
+                _connection ??= await _factory.CreateConnectionAsync();
+                Console.WriteLine("Connected to RabbitMQ Successfully");
+                return _connection;
+            }
+            finally
+            {
+                _connectionLock.Release();
+            }
+        }
 
-            channel.QueueDeclare(
-                queue: _settings.QueueName,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: arguments);
+        public async Task<bool> RabbitMQPublish<T>(T message)
+        {
+            try
+            {
+                var connection = await GetConnectionAsync();
+                
+                await using IChannel channel = await connection.CreateChannelAsync();
 
-            string json = JsonSerializer.Serialize(message);
+                Dictionary<string, object?> arguments = new()
+                {
+                    { "x-dead-letter-exchange", _settings.DeadLetterExchange },
+                    { "x-dead-letter-routing-key", _settings.DeadLetterQueue }
+                };
 
-            byte[] body = Encoding.UTF8.GetBytes(json);
+                await channel.QueueDeclareAsync(
+                    queue: _settings.QueueName,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: arguments);
 
-            IBasicProperties properties = channel.CreateBasicProperties();
+                string json = JsonSerializer.Serialize(message);
+                byte[] body = Encoding.UTF8.GetBytes(json);
 
-            properties.Persistent = true;
+                BasicProperties properties = new()
+                {
+                    Persistent = true,
+                };
 
-            channel.BasicPublish(
-                exchange: "",
-                routingKey: _settings.QueueName,
-                basicProperties: properties,
-                body: body);
+                await channel.BasicPublishAsync(
+                    exchange: "",
+                    routingKey: _settings.QueueName,
+                    mandatory: false,
+                    basicProperties: properties,
+                    body: body);
 
-            return Task.CompletedTask;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // TODO: Replace with proper ILogger logging
+                Console.WriteLine($"RabbitMQ Publish Failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_connection != null)
+            {
+                await _connection.DisposeAsync();
+            }
+            _connectionLock.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
