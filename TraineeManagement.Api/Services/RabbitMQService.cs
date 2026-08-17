@@ -48,7 +48,7 @@ namespace TraineeManagement.Api.Services
         {
             try
             {
-                var connection = await GetConnectionAsync();
+                IConnection connection = await GetConnectionAsync();
                 
                 await using IChannel channel = await connection.CreateChannelAsync();
 

@@ -3,12 +3,11 @@ using TraineeManagement.Api.DTOs;
 using TraineeManagement.Api.Services;
 using TraineeManagement.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using TraineeManagement.Data.Models;
+using TraineeManagement.Data.Enums;
 
 namespace TraineeManagement.Api.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     public class LearningTaskController(ILearningTaskService learningtaskService,ILogger<AuthService> logger) : ControllerBase
     {
@@ -16,6 +15,8 @@ namespace TraineeManagement.Api.Controllers
         private readonly ILogger<AuthService> _logger = logger;
 
         [HttpGet]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Trainee) + "," + nameof(UserRoles.Mentor))]
+ 
         public async Task<IActionResult> GetLearningTasks([FromQuery] LearningTaskQuery query)
         {
             if (query.PageNumber < 1)
@@ -45,6 +46,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpGet("id")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Trainee) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> GetLearningTaskById(int id)
         {
             try
@@ -65,6 +67,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> AddLearningTask([FromBody] LearningTaskRequest request)
         {
             try
@@ -91,6 +94,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpPut("id")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> UpdateLearningTaskData(int id, [FromBody] LearningTaskRequest request)
         {
             try
@@ -113,6 +117,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpDelete("id")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Trainee) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> DeleteLearningTask(int id)
         {
             try

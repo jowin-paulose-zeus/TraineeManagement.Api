@@ -3,11 +3,11 @@ using TraineeManagement.Api.DTOs;
 using TraineeManagement.Api.Services;
 using TraineeManagement.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using TraineeManagement.Data.Enums;
 
 namespace TraineeManagement.Api.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     public class TaskAssignmentController(ITaskAssignmentService taskAssignmentService, ILogger<AuthService> logger) : ControllerBase
     {
@@ -15,6 +15,7 @@ namespace TraineeManagement.Api.Controllers
         private readonly ILogger<AuthService> _logger = logger;
 
         [HttpPost]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> Create(TaskAssignmentRequest request)
         {
             _logger.LogInformation("Creating task assignment for TraineeId: {TraineeId}", request.TraineeId);
@@ -34,6 +35,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Mentor")]
         public async Task<IActionResult> GetAll()
         {
             _logger.LogInformation("Fetching all task assignments.");
@@ -44,6 +46,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Trainee) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> GetById(int id)
         {
             _logger.LogInformation("Fetching task assignment with Id: {Id}", id);
@@ -61,6 +64,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> Update(int id, TaskAssignmentRequest request)
         {
             _logger.LogInformation("Updating task assignment with Id: {Id}", id);

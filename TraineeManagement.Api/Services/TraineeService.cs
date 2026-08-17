@@ -6,6 +6,7 @@ using TraineeManagement.Api.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
+using TraineeManagement.Api.Helpers;
 
 namespace TraineeManagement.Api.Services
 {
@@ -70,50 +71,12 @@ namespace TraineeManagement.Api.Services
         public async Task<TraineeResponseRequest?> GetTraineeById(int id)
         {
             string? cacheKey = $"trainee:{id}";
-            try
+            async Task<TraineeResponseRequest?> retrieveFromDb()
             {
-                string? cachedData = await _cache.GetStringAsync(cacheKey);
-
-                if (!string.IsNullOrEmpty(cachedData))
-                {
-                    return JsonSerializer.Deserialize<TraineeResponseRequest>(cachedData);
-                }
+                Trainee? trainee = await _context.Trainees.FindAsync(id);
+                return trainee is null ? null : MapToResponse(trainee);
             }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex,
-                    "Redis cache unavailable. Falling back to MySQL.");
-            }
-            Trainee? trainee = await _context.Trainees
-                .FirstOrDefaultAsync(t => t.Id == id);
-
-            if (trainee is null)
-            {
-                return null;
-            }
-
-            TraineeResponseRequest? response = MapToResponse(trainee);
-
-            DistributedCacheEntryOptions cacheOptions = new()
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-            };
-
-            string? serializedResponse = JsonSerializer.Serialize(response);
-
-            try
-            {
-                await _cache.SetStringAsync(
-                    cacheKey,
-                    serializedResponse,
-                    cacheOptions);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex,
-                    "Unable to write data to Redis cache.");
-            }
-            return response;
+            return await _cache.GetOrSetAsync(cacheKey, retrieveFromDb, _logger);
         }
         public async Task<TraineeResponseRequest> AddTrainee(TraineeRequest request)
         {
@@ -142,15 +105,8 @@ namespace TraineeManagement.Api.Services
             trainee.UpdatedDate = DateTime.UtcNow;
             _context.Trainees.Update(trainee);
             await _context.SaveChangesAsync();
-            try
-            {
-                await _cache.RemoveAsync($"trainee:{id}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex,
-                    "Unable to invalidate Redis cache for trainee {Id}.", id);
-            }
+            string? cacheKey = $"trainee:{id}";
+            await _cache.RemoveCacheAsync(cacheKey, _logger);
             return MapToResponse(trainee);
         }
         public async Task<bool> DeleteTrainee(int id)
@@ -164,15 +120,8 @@ namespace TraineeManagement.Api.Services
 
             _context.Trainees.Remove(trainee);
             await _context.SaveChangesAsync();
-            try
-            {
-                await _cache.RemoveAsync($"trainee:{id}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex,
-                    "Removing Redis cache for trainee {Id}.", id);
-            }
+            string? cacheKey = $"trainee:{id}";
+            await _cache.RemoveCacheAsync(cacheKey, _logger);
             return true;
         }
     }

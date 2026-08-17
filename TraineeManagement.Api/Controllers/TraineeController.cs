@@ -4,6 +4,7 @@ using TraineeManagement.Api.Services;
 using TraineeManagement.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using TraineeManagement.Data.Models;
+using TraineeManagement.Data.Enums;
 
 namespace TraineeManagement.Api.Controllers
 {
@@ -16,6 +17,7 @@ namespace TraineeManagement.Api.Controllers
         private readonly ILogger<AuthService> _logger = logger;
 
         [HttpGet]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> GetTrainees([FromQuery] TraineeQuery query)
         {
             if (query.PageNumber < 1)
@@ -45,6 +47,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpGet("id")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> GetTraineeById(int id)
         {
             try
@@ -65,6 +68,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> AddTrainee([FromBody] TraineeRequest request)
         {
             try
@@ -91,6 +95,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpPut("id")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> UpdateTraineeData(int id, [FromBody] TraineeRequest request)
         {
             try
@@ -113,6 +118,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpDelete("id")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> DeleteTrainee(int id)
         {
             try

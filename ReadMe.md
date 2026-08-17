@@ -396,23 +396,9 @@ Implemented:
 
 ---
 
-# Docker Architecture
+# System Architecture
 
-```
-                  Client
-                     │
-                     ▼
-          TraineeManagement.Api
-          │         │          │
-          ▼         ▼          ▼
-      MySQL      Redis     RabbitMQ
-                                │
-                                ▼
-               SubmissionProcessor.Worker
-                                │
-                                ▼
-                  TrainingDirectory.Api
-```
+https://excalidraw.com/#json=IGNhkpngpooofNPm9cB4u,j29_lLB2fU6ZnUlM-TcUbA
 
 ---
 
@@ -500,58 +486,6 @@ POST /api/Auth/login
 ```
 
 Copy the returned JWT token and authorize using Swagger.
-
----
-
-# End-to-End Workflow
-
-```
-Authenticate
-
-↓
-
-Upload Submission
-
-↓
-
-Validate Request
-
-↓
-
-Store File Metadata
-
-↓
-
-Store Physical File
-
-↓
-
-Publish RabbitMQ Message
-
-↓
-
-Worker Consumes Message
-
-↓
-
-Retrieve Training Information
-
-↓
-
-Process Submission
-
-↓
-
-Update Job Status
-
-↓
-
-Invalidate Redis Cache
-
-↓
-
-Completed
-```
 
 ---
 

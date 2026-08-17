@@ -137,7 +137,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
     options.InstanceName = "TraineeManagement:";
 });
-var RabbitMQSettings = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMQSettings>()
+RabbitMQSettings RabbitMQSettings = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMQSettings>()
     ?? throw new InvalidOperationException("RabbitMQ configuration is missing.");
 
 builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMQ"));
@@ -156,7 +156,7 @@ builder.Services.Configure<KestrelServerOptions>(options =>
 {
     options.Limits.MaxRequestBodySize = long.MaxValue;
 });
-var trainingDirectoryUrl = builder.Configuration["TrainingDirectory:ApiUrl"] 
+string? trainingDirectoryUrl = builder.Configuration["TrainingDirectory:ApiUrl"] 
     ?? throw new InvalidOperationException("TrainingDirectory BaseUrl is missing from configuration.");
 
 string[] tags = ["ready"];

@@ -2,20 +2,21 @@ using Microsoft.AspNetCore.Mvc;
 using TraineeManagement.Api.DTOs;
 using TraineeManagement.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using TraineeManagement.Data.Enums;
 
 namespace TraineeManagement.Api.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
 
     public class ReviewController(IReviewService reviewService, ILogger<ReviewController> logger) : ControllerBase
     {
         [HttpPost]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> AddReview(ReviewRequest request)
         {
             logger.LogInformation("Creating review for SubmissionId: {SubmissionId}", request.SubmissionId);
-            
+
             ReviewResponse? review = await reviewService.AddReview(request);
 
             if (review is null)
@@ -29,15 +30,17 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Trainee) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> GetAllReviews()
         {
             logger.LogInformation("Fetching all reviews.");
-            
+
             List<ReviewResponse> reviews = await reviewService.GetReviews();
             return Ok(reviews);
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Trainee) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> GetReviewById(int id)
         {
             logger.LogInformation("Fetching review with Id: {Id}", id);

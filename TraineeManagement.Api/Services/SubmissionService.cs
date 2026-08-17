@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using TraineeManagement.Api.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
+using TraineeManagement.Api.Helpers;
 
 namespace TraineeManagement.Api.Services
 {
@@ -37,59 +38,22 @@ namespace TraineeManagement.Api.Services
                 .AsNoTracking()
                 .ToListAsync();
 
-            return submissions.Select(MapToResponse).ToList();
+            return [.. submissions.Select(MapToResponse)];
         }
 
         public async Task<SubmissionResponse?> GetSubmissionById(int id)
         {
             string? cacheKey = $"Submission:{id}";
 
-            try
+            async Task<SubmissionResponse?> retrieveFromDb()
             {
-                string? cachedData = await _cache.GetStringAsync(cacheKey);
-
-                if (!string.IsNullOrEmpty(cachedData))
-                {
-                    return JsonSerializer.Deserialize<SubmissionResponse>(cachedData);
-                }
+                Submission? submission = await context.Submissions
+                    .Include(currentSubmission => currentSubmission.TaskAssignment)
+                    .ThenInclude(ta => ta.LearningTask)
+                    .FirstOrDefaultAsync(s => s.Id == id);
+                return submission is null ? null : MapToResponse(submission);
             }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex,
-                    "Redis cache unavailable. Falling back to MySQL.");
-            }
-            Submission? submission = await context.Submissions
-                .Include(submission => submission.TaskAssignment)
-                    .ThenInclude(taskassignment => taskassignment.Trainee)
-                .Include(submission => submission.TaskAssignment)
-                    .ThenInclude(taskassignment => taskassignment.LearningTask)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(submission => submission.Id == id);
-
-            if (submission is null) return null;
-            SubmissionResponse? response = MapToResponse(submission);
-
-            DistributedCacheEntryOptions cacheOptions = new()
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-            };
-
-            string? serializedResponse = JsonSerializer.Serialize(response);
-
-            try
-            {
-                await _cache.SetStringAsync(
-                    cacheKey,
-                    serializedResponse,
-                    cacheOptions);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex,
-                    "Unable to write data to Redis cache.");
-            }
-
-            return MapToResponse(submission);
+            return await _cache.GetOrSetAsync(cacheKey, retrieveFromDb, _logger);
         }
 
         public async Task<SubmissionResponse?> AddSubmission(SubmissionRequest request)

@@ -8,10 +8,10 @@ using TraineeManagement.Data.Data;
 using TraineeManagement.Data.Configuration;
 using TraineeManagement.Data.Models;
 using TraineeManagement.Api.DTOs;
+using TraineeManagement.Data.Enums;
 
 namespace TraineeManagement.Api.Controllers
 {
-    [Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/submissionfile")]
     public class SubmissionUploadController(
@@ -27,6 +27,7 @@ namespace TraineeManagement.Api.Controllers
 
         [HttpPost("{submissionId}/files")]
         [Consumes("multipart/form-data")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Trainee))]
         public async Task<IActionResult> UploadFile(int submissionId, IFormFile file)
         {
             try
@@ -52,6 +53,7 @@ namespace TraineeManagement.Api.Controllers
             }
         }
         [HttpGet("{id:int}/download")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Trainee) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> Download(int id)
         {
             DownloadSubmissionFileResponse? response = await _storageService.DownloadAsync(id);

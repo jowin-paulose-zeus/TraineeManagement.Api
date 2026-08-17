@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using TraineeManagement.Api.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
+using TraineeManagement.Api.Helpers;
 
 namespace TraineeManagement.Api.Services
 {
@@ -80,52 +81,17 @@ namespace TraineeManagement.Api.Services
         {
             string? cacheKey = $"taskassignment:{id}";
 
-            try
-            {
-                string? cachedData = await _cache.GetStringAsync(cacheKey);
+            Func<Task<TaskAssignmentResponse?>> retrieveFromDb = async () =>
+                       {
+                           TaskAssignment? taskAssignment = await _context.TaskAssignments
+                               .Include(task => task.Trainee)
+                               .Include(task => task.Mentor)
+                               .Include(task => task.LearningTask)
+                               .FirstOrDefaultAsync(task => task.Id == id);
 
-                if (!string.IsNullOrEmpty(cachedData))
-                {
-                    return JsonSerializer.Deserialize<TaskAssignmentResponse>(cachedData);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex,
-                    "Redis cache unavailable. Falling back to MySQL.");
-            }
-            TaskAssignment? taskAssignment = await _context.TaskAssignments
-            .Include(trainee => trainee.Trainee)
-            .Include(mentor => mentor.Mentor)
-            .Include(learningtask => learningtask.LearningTask)
-            .FirstOrDefaultAsync(taskAssignment => taskAssignment.Id == id);
-
-            if (taskAssignment is null)
-            {
-                return null;
-            }
-            TaskAssignmentResponse? response = MapToResponse(taskAssignment);
-
-            DistributedCacheEntryOptions cacheOptions = new()
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-            };
-
-            string? serializedResponse = JsonSerializer.Serialize(response);
-
-            try
-            {
-                await _cache.SetStringAsync(
-                    cacheKey,
-                    serializedResponse,
-                    cacheOptions);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex,
-                    "Unable to write data to Redis cache.");
-            }
-            return MapToResponse(taskAssignment);
+                           return taskAssignment is null ? null : MapToResponse(taskAssignment);
+                       };
+            return await _cache.GetOrSetAsync(cacheKey, retrieveFromDb, _logger);
         }
         public async Task<TaskAssignmentResponse?> UpdateTaskAssignment(int id, TaskAssignmentRequest request)
         {
@@ -161,15 +127,8 @@ namespace TraineeManagement.Api.Services
 
             _context.TaskAssignments.Update(assignment);
             await _context.SaveChangesAsync();
-            try
-            {
-                await _cache.RemoveAsync($"taskassignment:{id}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex,
-                    "Unable to invalidate Redis cache for taskassignment {Id}.", id);
-            }
+            string? cacheKey = $"taskassignment:{id}";
+            await _cache.RemoveCacheAsync(cacheKey, _logger);
             return MapToResponse(assignment);
         }
 

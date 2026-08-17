@@ -1,11 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TraineeManagement.Api.DTOs;
 using TraineeManagement.Api.Interfaces;
+using TraineeManagement.Data.Enums;
 
 namespace TraineeManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/processing-jobs")]
+[Authorize(Roles = nameof(UserRoles.Admin))]
 public class ProcessingJobsController(IProcessingJobService service, ILogger<ProcessingJobsController> logger) : ControllerBase
 {
     private readonly IProcessingJobService _service = service;

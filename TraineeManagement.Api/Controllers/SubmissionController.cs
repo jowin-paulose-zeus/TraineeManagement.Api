@@ -4,12 +4,12 @@ using TraineeManagement.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using TraineeManagement.Api.Clients;
 using TraineeManagement.Data.Contracts;
+using TraineeManagement.Data.Enums;
 
 
 namespace TraineeManagement.Api.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
 
     public class SubmissionController(ISubmissionService submissionService,
@@ -18,6 +18,7 @@ namespace TraineeManagement.Api.Controllers
     {
         private readonly ITrainingDirectoryClient _trainingDirectoryClient = trainingDirectoryClient;
         [HttpPost]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> AddSubmission(SubmissionRequest request)
         {
             logger.LogInformation("Creating submission for TaskAssignmentId: {TaskAssignmentId}", request.TaskAssignmentId);
@@ -35,6 +36,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Trainee) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> GetAllSubmissions()
         {
             logger.LogInformation("Fetching all submissions.");
@@ -44,6 +46,7 @@ namespace TraineeManagement.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Trainee) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> GetSubmissionById(int id)
         {
             logger.LogInformation("Fetching submission with Id: {Id}", id);
@@ -59,6 +62,7 @@ namespace TraineeManagement.Api.Controllers
             return Ok(submission);
         }
         [HttpGet("{submissionId:int}/processing-profile")]
+        [Authorize(Roles = nameof(UserRoles.Admin))]
         public async Task<IActionResult> GetProcessingProfile(
             int submissionId,
             CancellationToken cancellationToken)

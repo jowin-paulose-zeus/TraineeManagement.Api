@@ -46,7 +46,7 @@ public class Worker(
             autoDelete: false,
             cancellationToken: stoppingToken);
 
-            Dictionary<string, object?> arguments = new()
+        Dictionary<string, object?> arguments = new()
             {
                 { "x-dead-letter-exchange", _settings.DeadLetterExchange },
                 { "x-dead-letter-routing-key", _settings.DeadLetterQueue }
@@ -152,15 +152,20 @@ public class Worker(
                         deliveryTag: ea.DeliveryTag,
                         multiple: false,
                         requeue: false,
-                        cancellationToken: stoppingToken); 
+                        cancellationToken: stoppingToken);
                 }
                 else
                 {
                     await context.SaveChangesAsync(stoppingToken);
 
-                    _logger.LogWarning(ex, "Retry {Attempt}/{MaxRetryAttempts} for SubmissionId {SubmissionId}", 
-                        job.Attempts, MaxRetryAttempts, message.SubmissionId);
+                    double baseDelaySec = Math.Pow(2, job.Attempts);
+                    double maxCeilingSec = Math.Min(baseDelaySec, 60);
+                    int finalDelayMs = Random.Shared.Next(0, (int)(maxCeilingSec * 1000));
 
+                    _logger.LogWarning(ex, "Attempt {Attempt}/{Max} failed. Backing off for {Delay}ms before retry.",
+                                    job.Attempts, MaxRetryAttempts, finalDelayMs);
+                    
+                    await Task.Delay(finalDelayMs, stoppingToken);
                     await channel.BasicNackAsync(
                         deliveryTag: ea.DeliveryTag,
                         multiple: false,
