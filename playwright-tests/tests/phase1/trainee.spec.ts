@@ -1,18 +1,22 @@
 import { test, expect } from "@playwright/test";
 import { ApiClient } from "../utils/apiClient";
 import { getAdminToken } from "../utils/authHelper";
+import { CleanupHelper } from "../utils/cleanupHelper";
+import { TestDataFactory } from "../utils/testDataFactory";
 
 test.describe("Trainee API", () => {
   let api: ApiClient;
+  let cleanup: CleanupHelper;
 
   test.beforeEach(async ({ request }) => {
     const token = await getAdminToken(request);
 
     api = new ApiClient(request, token);
+    cleanup = new CleanupHelper(api);
   });
 
   test("should get all trainees", async () => {
-    const response = await api.get("api/Trainee");
+    const response = await api.get("api/Trainee?pageNumber=1&pageSize=10");
 
     expect(response.status()).toBe(200);
 
@@ -28,45 +32,44 @@ test.describe("Trainee API", () => {
   });
 
   test("should get trainee by id", async () => {
-    const email = `playwright.${Date.now()}@test.com`;
-
-    const createResponse = await api.post("api/Trainee", {
+    const traineeData = TestDataFactory.trainee({
       firstName: "Playwright",
       lastName: "Test",
-      email,
       techStack: "TypeScript",
-      status: 0,
     });
+
+    const createResponse = await api.post("api/Trainee", traineeData);
 
     expect(createResponse.status()).toBe(201);
 
     const createdTrainee = await createResponse.json();
     const traineeId = createdTrainee.id;
 
-    const response = await api.get(`api/Trainee/id?id=${traineeId}`);
+    try {
+      const response = await api.get(`api/Trainee/id?id=${traineeId}`);
 
-    expect(response.status()).toBe(200);
+      expect(response.status()).toBe(200);
 
-    const trainee = await response.json();
+      const trainee = await response.json();
 
-    expect(trainee).toBeDefined();
-    expect(trainee.id).toBe(traineeId);
-    expect(trainee.firstName).toBe("Playwright");
-    expect(trainee.lastName).toBe("Test");
-    expect(trainee.techStack).toBe("TypeScript");
-    expect(trainee.status).toBe("Active");
+      expect(trainee).toBeDefined();
+      expect(trainee.id).toBe(traineeId);
+      expect(trainee.firstName).toBe("Playwright");
+      expect(trainee.lastName).toBe("Test");
+      expect(trainee.techStack).toBe("TypeScript");
+      expect(trainee.status).toBe("Active");
+    } finally {
+      await cleanup.deleteTrainee(traineeId);
+    }
   });
 
   test("should create a trainee", async () => {
-    const email = `playwright.${Date.now()}@test.com`;
-
-    const response = await api.post("api/Trainee", {
+    const traineeData = TestDataFactory.trainee({
       firstName: "Playwright",
       lastName: "Create",
-      email,
-      techStack: "TypeScript",
-      status: 0,
     });
+
+    const response = await api.post("api/Trainee", traineeData);
 
     expect(response.status()).toBe(201);
 
@@ -75,50 +78,61 @@ test.describe("Trainee API", () => {
     expect(trainee.id).toBeDefined();
     expect(trainee.firstName).toBe("Playwright");
     expect(trainee.lastName).toBe("Create");
-    expect(trainee.email).toBe(email);
+    expect(trainee.email).toBe(traineeData.email);
     expect(trainee.techStack).toBe("TypeScript");
     expect(trainee.status).toBe("Active");
+
+    await cleanup.deleteTrainee(trainee.id);
   });
 
   test("should update a trainee", async () => {
-    const createResponse = await api.post("api/Trainee", {
+    const traineeData = TestDataFactory.trainee({
       firstName: "Before",
       lastName: "Update",
-      email: `update.${Date.now()}@test.com`,
       techStack: "C#",
-      status: 0,
     });
+
+    const createResponse = await api.post("api/Trainee", traineeData);
 
     expect(createResponse.status()).toBe(201);
 
     const createdTrainee = await createResponse.json();
     const traineeId = createdTrainee.id;
 
-    const updateResponse = await api.put(`api/Trainee/id?id=${traineeId}`, {
-      firstName: "After",
-      lastName: "Update",
-      email: `updated.${Date.now()}@test.com`,
-      techStack: "TypeScript",
-      status: 2,
-    });
+    try {
+      const updatedEmail = TestDataFactory.uniqueEmail("trainee.updated");
 
-    expect(updateResponse.status()).toBe(200);
+      const updateResponse = await api.put(`api/Trainee/id?id=${traineeId}`, {
+        firstName: "After",
+        lastName: "Update",
+        email: updatedEmail,
+        techStack: "TypeScript",
+        status: 1,
+      });
 
-    const updatedTrainee = await updateResponse.json();
+      expect(updateResponse.status()).toBe(200);
 
-    expect(updatedTrainee.id).toBe(traineeId);
-    expect(updatedTrainee.firstName).toBe("After");
-    expect(updatedTrainee.lastName).toBe("Update");
-    expect(updatedTrainee.techStack).toBe("TypeScript");
-    expect(updatedTrainee.status).toBe("Completed");
+      const updatedTrainee = await updateResponse.json();
+
+      expect(updatedTrainee.id).toBe(traineeId);
+      expect(updatedTrainee.firstName).toBe("After");
+      expect(updatedTrainee.lastName).toBe("Update");
+      expect(updatedTrainee.techStack).toBe("TypeScript");
+      expect(updatedTrainee.status).toBe("Inactive");
+    } finally {
+      await cleanup.deleteTrainee(traineeId);
+    }
   });
 
   test("should delete a trainee", async () => {
-    const createResponse = await api.post("api/Trainee", {
+    const traineeData = TestDataFactory.trainee({
       firstName: "Delete",
       lastName: "Test",
-      email: `delete.${Date.now()}@test.com`,
-      techStack: "C#",
+      status: "Inactive",
+    });
+
+    const createResponse = await api.post("api/Trainee", {
+      ...traineeData,
       status: 1,
     });
 
@@ -144,10 +158,7 @@ test.describe("Trainee API", () => {
 
   test("should return 404 when updating non-existing trainee", async () => {
     const response = await api.put("api/Trainee/999999999", {
-      firstName: "Test",
-      lastName: "Update",
-      email: `notfound.${Date.now()}@test.com`,
-      techStack: "TypeScript",
+      ...TestDataFactory.trainee(),
       status: 0,
     });
 
@@ -164,9 +175,9 @@ test.describe("Trainee API", () => {
     const response = await api.post("api/Trainee", {
       firstName: "",
       lastName: "",
-      email: "invalid-email",
+      email: TestDataFactory.invalidEmail(),
       techStack: "",
-      status: "InvalidStatus",
+      status: TestDataFactory.invalidStatus(),
     });
 
     expect(response.status()).toBe(400);
@@ -179,9 +190,9 @@ test.describe("Trainee API", () => {
   test("should return 400 when first name is missing", async () => {
     const response = await api.post("api/Trainee", {
       lastName: "Test",
-      email: `missing.${Date.now()}@test.com`,
-      techStack: "TypeScript",
-      status: "Active",
+      email: TestDataFactory.uniqueEmail("missing"),
+      techStack: "Dotnet",
+      status: 0,
     });
 
     expect(response.status()).toBe(400);
@@ -191,9 +202,9 @@ test.describe("Trainee API", () => {
     const response = await api.post("api/Trainee", {
       firstName: "Invalid",
       lastName: "Email",
-      email: "invalid-email",
-      techStack: "TypeScript",
-      status: "Active",
+      email: TestDataFactory.invalidEmail(),
+      techStack: "Dotnet",
+      status: 0,
     });
 
     expect(response.status()).toBe(400);
@@ -202,32 +213,39 @@ test.describe("Trainee API", () => {
   test("should search trainees", async () => {
     const uniqueName = `Search${Date.now()}`;
 
-    const createResponse = await api.post("api/Trainee", {
+    const traineeData = TestDataFactory.trainee({
       firstName: uniqueName,
       lastName: "Trainee",
       email: `${uniqueName.toLowerCase()}@test.com`,
-      techStack: "TypeScript",
-      status: 0,
     });
+
+    const createResponse = await api.post("api/Trainee", traineeData);
 
     expect(createResponse.status()).toBe(201);
 
-    const response = await api.get(
-      `api/Trainee?pageNumber=1&pageSize=10&search=${uniqueName}`,
-    );
+    const createdTrainee = await createResponse.json();
+    const traineeId = createdTrainee.id;
 
-    expect(response.status()).toBe(200);
+    try {
+      const response = await api.get(
+        `api/Trainee?pageNumber=1&pageSize=10&search=${uniqueName}`,
+      );
 
-    const body = await response.json();
+      expect(response.status()).toBe(200);
 
-    expect(body.data).toBeDefined();
-    expect(Array.isArray(body.data)).toBeTruthy();
+      const body = await response.json();
 
-    expect(
-      body.data.some(
-        (trainee: { firstName: string }) => trainee.firstName === uniqueName,
-      ),
-    ).toBeTruthy();
+      expect(body.data).toBeDefined();
+      expect(Array.isArray(body.data)).toBeTruthy();
+
+      expect(
+        body.data.some(
+          (trainee: { firstName: string }) => trainee.firstName === uniqueName,
+        ),
+      ).toBeTruthy();
+    } finally {
+      await cleanup.deleteTrainee(traineeId);
+    }
   });
 
   test("should return 401 without authentication", async ({ request }) => {
