@@ -36,4 +36,16 @@ export class CleanupHelper {
       );
     }
   }
+
+  public async deleteTaskAssignment(assignmentId: number): Promise<void> {
+    const response = await this.api.delete(
+      `api/TaskAssignment/id?id=${assignmentId}`,
+    );
+
+    if (response.status() !== 204 && response.status() !== 404) {
+      throw new Error(
+        `Failed to cleanup task assignment ${assignmentId}. Status: ${response.status()}`,
+      );
+    }
+  }
 }

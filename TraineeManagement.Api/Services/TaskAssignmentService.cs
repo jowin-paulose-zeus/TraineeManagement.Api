@@ -57,7 +57,7 @@ namespace TraineeManagement.Api.Services
                 return null;
 
             }
-            Mentor? mentor = await _context.Mentors.FirstOrDefaultAsync(mentor => mentor.Id == request.TraineeId);
+            Mentor? mentor = await _context.Mentors.FirstOrDefaultAsync(mentor => mentor.Id == request.MentorId);
             if (mentor is null)
             {
                 return null;

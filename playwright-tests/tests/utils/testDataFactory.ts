@@ -77,22 +77,28 @@ export class TestDataFactory {
     mentorId: number,
     learningTaskId: number,
   ) {
+    const assignedDate = new Date();
+    const dueDate = new Date(assignedDate);
+
+    dueDate.setDate(dueDate.getDate() + 7);
+
     return {
       traineeId,
       mentorId,
       learningTaskId,
-      dueDate: this.futureDate(7),
+      assignedDate: assignedDate.toISOString(),
+      dueDate: dueDate.toISOString(),
       status: 0,
-      remarks: "Created by Test",
+      remarks: "Created by Playwright API testing.",
     };
   }
 
   public static taskAssignmentUpdate() {
     return {
-      status: "InProgress",
+      status: 1,
     };
   }
-
+  
   public static submission(taskAssignmentId: number) {
     return {
       taskAssignmentId,
