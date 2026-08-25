@@ -93,12 +93,22 @@ export class TestDataFactory {
     };
   }
 
-  public static taskAssignmentUpdate() {
+  public static taskAssignmentUpdate(
+    traineeId: number,
+    mentorId: number,
+    learningTaskId: number,
+  ) {
     return {
+      traineeId,
+      mentorId,
+      learningTaskId,
+      assignedDate: this.today(),
+      dueDate: this.futureDate(7),
       status: 1,
+      remarks: "Updated by Playwright API testing.",
     };
   }
-  
+
   public static submission(taskAssignmentId: number) {
     return {
       taskAssignmentId,
@@ -113,7 +123,8 @@ export class TestDataFactory {
       submissionId,
       mentorId,
       feedback: "Review created through Playwright API testing.",
-      reviewStatus: 0,
+      score: 9,
+      status: 0,
     };
   }
 

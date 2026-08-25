@@ -68,46 +68,30 @@ test.describe("Task Assignment API", () => {
 
     const task = await taskResponse.json();
 
-    let assignmentId: number | undefined;
+    const assignmentData = TestDataFactory.taskAssignment(
+      trainee.id,
+      mentor.id,
+      task.id,
+    );
 
-    try {
-      const assignmentData = TestDataFactory.taskAssignment(
-        trainee.id,
-        mentor.id,
-        task.id,
-      );
+    const response = await api.post("api/TaskAssignment", assignmentData);
 
-      const response = await api.post(
-        "api/TaskAssignment",
-        assignmentData,
-      );
+    expect(response.status()).toBe(201);
 
-      expect(response.status()).toBe(201);
+    const assignment = await response.json();
 
-      const assignment = await response.json();
+    expect(assignment.id).toBeDefined();
+    expect(assignment.traineeId).toBe(trainee.id);
+    expect(assignment.mentorId).toBe(mentor.id);
+    expect(assignment.learningTaskId).toBe(task.id);
 
-      assignmentId = assignment.id;
+    expect(assignment.traineeName).toContain("Assignment");
+    expect(assignment.mentorName).toContain("Assignment");
+    expect(assignment.learningTaskTitle).toBe(task.title);
 
-      expect(assignment.id).toBeDefined();
-      expect(assignment.traineeId).toBe(trainee.id);
-      expect(assignment.mentorId).toBe(mentor.id);
-      expect(assignment.learningTaskId).toBe(task.id);
-      expect(assignment.traineeName).toContain("Assignment");
-      expect(assignment.mentorName).toContain("Assignment");
-      expect(assignment.learningTaskTitle).toBe(task.title);
-      expect(assignment.status).toBe("Assigned");
-      expect(assignment.remarks).toBe(
-        "Created by Playwright API testing.",
-      );
-    } finally {
-      if (assignmentId !== undefined) {
-        await cleanup.deleteTaskAssignment(assignmentId);
-      }
+    expect(assignment.status).toBe("Assigned");
 
-      await cleanup.deleteTrainee(trainee.id);
-      await cleanup.deleteMentor(mentor.id);
-      await cleanup.deleteLearningTask(task.id);
-    }
+    expect(assignment.remarks).toBe("Created by Playwright API testing.");
   });
 
   test("should update task assignment status", async () => {
@@ -152,44 +136,26 @@ test.describe("Task Assignment API", () => {
 
     const task = await taskResponse.json();
 
-    let assignmentId: number | undefined;
+    const assignmentResponse = await api.post(
+      "api/TaskAssignment",
+      TestDataFactory.taskAssignment(trainee.id, mentor.id, task.id),
+    );
 
-    try {
-      const assignmentResponse = await api.post(
-        "api/TaskAssignment",
-        TestDataFactory.taskAssignment(
-          trainee.id,
-          mentor.id,
-          task.id,
-        ),
-      );
+    expect(assignmentResponse.status()).toBe(201);
 
-      expect(assignmentResponse.status()).toBe(201);
+    const assignment = await assignmentResponse.json();
 
-      const assignment = await assignmentResponse.json();
+    const updateResponse = await api.put(
+      `api/TaskAssignment/${assignment.id}`,
+      TestDataFactory.taskAssignmentUpdate(trainee.id, mentor.id, task.id),
+    );
 
-      assignmentId = assignment.id;
+    expect(updateResponse.status()).toBe(200);
 
-      const updateResponse = await api.put(
-        `api/TaskAssignment/${assignmentId}/status`,
-        TestDataFactory.taskAssignmentUpdate(),
-      );
+    const updatedAssignment = await updateResponse.json();
 
-      expect(updateResponse.status()).toBe(200);
-
-      const updatedAssignment = await updateResponse.json();
-
-      expect(updatedAssignment.id).toBe(assignmentId);
-      expect(updatedAssignment.status).toBe("InProgress");
-    } finally {
-      if (assignmentId !== undefined) {
-        await cleanup.deleteTaskAssignment(assignmentId);
-      }
-
-      await cleanup.deleteTrainee(trainee.id);
-      await cleanup.deleteMentor(mentor.id);
-      await cleanup.deleteLearningTask(task.id);
-    }
+    expect(updatedAssignment.id).toBe(assignment.id);
+    expect(updatedAssignment.status).toBe("InProgress");
   });
 
   test("should return 400 for invalid trainee id", async () => {
@@ -217,11 +183,7 @@ test.describe("Task Assignment API", () => {
     try {
       const response = await api.post(
         "api/TaskAssignment",
-        TestDataFactory.taskAssignment(
-          999999999,
-          mentor.id,
-          task.id,
-        ),
+        TestDataFactory.taskAssignment(999999999, mentor.id, task.id),
       );
 
       expect(response.status()).toBe(400);
@@ -256,11 +218,7 @@ test.describe("Task Assignment API", () => {
     try {
       const response = await api.post(
         "api/TaskAssignment",
-        TestDataFactory.taskAssignment(
-          trainee.id,
-          999999999,
-          task.id,
-        ),
+        TestDataFactory.taskAssignment(trainee.id, 999999999, task.id),
       );
 
       expect(response.status()).toBe(400);
@@ -295,11 +253,7 @@ test.describe("Task Assignment API", () => {
     try {
       const response = await api.post(
         "api/TaskAssignment",
-        TestDataFactory.taskAssignment(
-          trainee.id,
-          mentor.id,
-          999999999,
-        ),
+        TestDataFactory.taskAssignment(trainee.id, mentor.id, 999999999),
       );
 
       expect(response.status()).toBe(400);

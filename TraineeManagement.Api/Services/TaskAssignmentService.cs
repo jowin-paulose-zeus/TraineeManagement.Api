@@ -63,7 +63,7 @@ namespace TraineeManagement.Api.Services
                 return null;
 
             }
-            LearningTask? learningTask = await _context.LearningTasks.FirstOrDefaultAsync(learningTask => learningTask.Id == request.TraineeId);
+            LearningTask? learningTask = await _context.LearningTasks.FirstOrDefaultAsync(learningTask => learningTask.Id == request.LearningTaskId);
             if (learningTask is null)
             {
                 return null;
@@ -81,16 +81,16 @@ namespace TraineeManagement.Api.Services
         {
             string? cacheKey = $"taskassignment:{id}";
 
-            Func<Task<TaskAssignmentResponse?>> retrieveFromDb = async () =>
-                       {
-                           TaskAssignment? taskAssignment = await _context.TaskAssignments
-                               .Include(task => task.Trainee)
-                               .Include(task => task.Mentor)
-                               .Include(task => task.LearningTask)
-                               .FirstOrDefaultAsync(task => task.Id == id);
+            async Task<TaskAssignmentResponse?> retrieveFromDb()
+            {
+                TaskAssignment? taskAssignment = await _context.TaskAssignments
+                    .Include(task => task.Trainee)
+                    .Include(task => task.Mentor)
+                    .Include(task => task.LearningTask)
+                    .FirstOrDefaultAsync(task => task.Id == id);
 
-                           return taskAssignment is null ? null : MapToResponse(taskAssignment);
-                       };
+                return taskAssignment is null ? null : MapToResponse(taskAssignment);
+            }
             return await _cache.GetOrSetAsync(cacheKey, retrieveFromDb, _logger);
         }
         public async Task<TaskAssignmentResponse?> UpdateTaskAssignment(int id, TaskAssignmentRequest request)
