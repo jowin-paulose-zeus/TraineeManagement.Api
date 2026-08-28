@@ -34,10 +34,16 @@ namespace TraineeManagement.Api.Controllers
             {
                 FileStorageResponse response = await _storageService.Upload(submissionId, file);
 
+                if (response is null)
+                {
+                    return NotFound();
+                }
                 return Accepted(new
                 {
+                    Id = response.Id,
                     TrackingId = response.TrackingId,
                     SubmissionId = response.SubmissionId,
+                    ProcessingJobID = response.ProcessingJobID,
                     Status = "Queued"
                 });
             }
@@ -56,18 +62,31 @@ namespace TraineeManagement.Api.Controllers
         [Authorize(Roles = nameof(UserRoles.Admin) + "," + nameof(UserRoles.Trainee) + "," + nameof(UserRoles.Mentor))]
         public async Task<IActionResult> Download(int id)
         {
-            DownloadSubmissionFileResponse? response = await _storageService.DownloadAsync(id);
-
-            return File(
-                response.Stream,
-                response.ContentType,
-                response.FileName);
+            try
+            {
+                DownloadSubmissionFileResponse? response = await _storageService.DownloadAsync(id);
+                return File(
+                    response.Stream,
+                    response.ContentType,
+                    response.FileName);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
         }
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _storageService.DeleteAsync(id);
-            return NoContent();
+            try
+            {
+                await _storageService.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
         }
     }
 }

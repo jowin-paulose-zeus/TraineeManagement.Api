@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TraineeManagement.Api.Clients;
 using TraineeManagement.Data.Contracts;
@@ -6,6 +7,7 @@ namespace TraineeManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/directory-profile")]
+[Authorize(Roles = "Admin")]
 public class DirectoryProfileController(ITrainingDirectoryClient trainingDirectoryClient) : ControllerBase
 {
     private readonly ITrainingDirectoryClient _trainingDirectoryClient =

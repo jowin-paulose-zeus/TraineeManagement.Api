@@ -10,5 +10,6 @@ namespace TraineeManagement.Api.DTOs
         public required string OriginalFileName { get; set; }
         public long Size { get; set; }
         public Guid TrackingId { get; set; }
+        public int ProcessingJobID { get; set; }
     }
 }

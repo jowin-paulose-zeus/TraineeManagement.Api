@@ -223,7 +223,8 @@ namespace TraineeManagement.Api.Services
                 ContentType = dbFile.ContentType,
                 OriginalFileName = dbFile.OriginalFileName,
                 Size = dbFile.Size,
-                TrackingId = message.CorrelationId
+                TrackingId = message.CorrelationId,
+                ProcessingJobID = job.Id
             };
 
         }

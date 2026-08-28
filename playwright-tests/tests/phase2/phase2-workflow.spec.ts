@@ -5,9 +5,8 @@ import { TestDataFactory } from "../utils/testDataFactory";
 
 test.describe("Complete Trainee Management Workflow", () => {
   test("should complete trainee to review workflow", async ({ request }) => {
-    // --------------------------------------------------
+
     // 1. Login
-    // --------------------------------------------------
 
     const token = await getAdminToken(request);
 
@@ -16,9 +15,7 @@ test.describe("Complete Trainee Management Workflow", () => {
 
     const api = new ApiClient(request, token);
 
-    // --------------------------------------------------
     // 2. Create Trainee
-    // --------------------------------------------------
 
     const traineeData = TestDataFactory.trainee({
       firstName: "E2E",
@@ -38,10 +35,8 @@ test.describe("Complete Trainee Management Workflow", () => {
     expect(trainee.firstName).toBe("E2E");
     expect(trainee.lastName).toBe("Trainee");
 
-    // --------------------------------------------------
-    // 3. Create Mentor
-    // --------------------------------------------------
-
+    // 3. Create Mentor   
+    
     const mentorData = TestDataFactory.mentor({
       firstName: "E2E",
       lastName: "Mentor",
@@ -60,9 +55,7 @@ test.describe("Complete Trainee Management Workflow", () => {
     expect(mentor.firstName).toBe("E2E");
     expect(mentor.lastName).toBe("Mentor");
 
-    // --------------------------------------------------
     // 4. Create Learning Task
-    // --------------------------------------------------
 
     const taskData = TestDataFactory.learningTask({
       title: `E2E Learning Task ${Date.now()}`,
@@ -83,9 +76,7 @@ test.describe("Complete Trainee Management Workflow", () => {
     expect(task.title).toBe(taskData.title);
     expect(task.expectedTechStack).toBe("TypeScript");
 
-    // --------------------------------------------------
     // 5. Create Task Assignment
-    // --------------------------------------------------
 
     const assignmentData = TestDataFactory.taskAssignment(
       trainee.id,
@@ -108,9 +99,7 @@ test.describe("Complete Trainee Management Workflow", () => {
     expect(assignment.learningTaskId).toBe(task.id);
     expect(assignment.status).toBe("Assigned");
 
-    // --------------------------------------------------
     // 6. Create Submission
-    // --------------------------------------------------
 
     const submissionData = TestDataFactory.submission(assignment.id);
 
@@ -125,9 +114,7 @@ test.describe("Complete Trainee Management Workflow", () => {
     expect(submission.submissionUrl).toBe("https://test.url.com");
     expect(submission.status).toBe("Submitted");
 
-    // --------------------------------------------------
     // 7. Create Review
-    // --------------------------------------------------
 
     const reviewData = TestDataFactory.review(submission.id, mentor.id);
 
@@ -146,10 +133,8 @@ test.describe("Complete Trainee Management Workflow", () => {
     expect(review.score).toBe(9);
     expect(review.status).toBe("Accepted");
 
-    // --------------------------------------------------
     // 8. Verify Final Review
-    // --------------------------------------------------
-
+ 
     const finalReviewResponse = await api.get(`api/Review/${review.id}`);
 
     expect(finalReviewResponse.status()).toBe(200);
