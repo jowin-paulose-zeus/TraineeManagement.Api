@@ -10,9 +10,9 @@ dotenv.config();
 export default defineConfig({
     testDir: './tests',
 
-    fullyParallel: false,
+    fullyParallel: true,
 
-    workers: 1,
+    workers: 10,
 
     timeout: 30_000,
 

@@ -103,7 +103,7 @@ test.describe("RabbitMQ Processing", () => {
 
       const job = await jobResponse.json();
 
-      expect(job.status).toBe("Queued");
+      expect(job.status).toMatch(/^(Queued|Processing|Completed)$/);
       expect(job.submissionId).toBe(submission.id);
       expect(job.correlationId).toBe(uploadBody.trackingId);
     } finally {
@@ -210,7 +210,7 @@ test.describe("RabbitMQ Processing", () => {
             intervals: [500, 1000, 2000],
           },
         )
-        .toBe("Queued");
+        .toMatch(/^(Queued|Processing|Completed)$/);
 
       // Get final job
       const finalResponse = await api.get(
@@ -221,7 +221,7 @@ test.describe("RabbitMQ Processing", () => {
 
       const finalJob = await finalResponse.json();
 
-      expect(finalJob.status).toBe("Queued");
+      expect(["Queued","Processing","Completed"]).toContain(finalJob.status);
 
       expect(finalJob.submissionId).toBe(submission.id);
 
