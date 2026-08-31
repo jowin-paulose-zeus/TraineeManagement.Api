@@ -221,7 +221,6 @@ test.describe("RabbitMQ Processing", () => {
 
       const finalJob = await finalResponse.json();
 
-      // Verify RabbitMQ processing completed
       expect(finalJob.status).toBe("Queued");
 
       expect(finalJob.submissionId).toBe(submission.id);
@@ -346,7 +345,7 @@ test.describe("RabbitMQ Processing", () => {
             intervals: [500, 1000, 2000],
           },
         )
-        .toBe("Queued");
+        .toBe("Completed");
 
       const response = await api.get(`api/processing-jobs/${processingJobID}`);
 
@@ -354,7 +353,7 @@ test.describe("RabbitMQ Processing", () => {
 
       const job = await response.json();
 
-      expect(job.status).toBe("Queued");
+      expect(job.status).toBe("Completed");
     }
   });
 

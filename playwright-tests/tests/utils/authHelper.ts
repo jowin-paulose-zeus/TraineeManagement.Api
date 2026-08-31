@@ -5,16 +5,15 @@ export async function getAdminToken(
 ): Promise<string> {
   const response = await request.post("/api/auth/login", {
     data: {
-      username: "admin",
-      password: "admin@123",
+      username: process.env.ADMIN_USERNAME,
+      password: process.env.ADMIN_PASSWORD,
     },
   });
 
   expect(response.status()).toBe(200);
-
+  
   const body = await response.json();
-
   expect(body.token).toBeTruthy();
-
+  
   return body.token;
 }
